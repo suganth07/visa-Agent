@@ -89,7 +89,7 @@ export class VisaProviderService {
             email: string;
             phone_number: string;
         }>;
-    }) {
+    }): Promise<any> {
         throw new Error('No case provider connected. TODO(visa-agent): implement case creation (case_start).');
     }
 
@@ -98,7 +98,7 @@ export class VisaProviderService {
      *
      * TODO(visa-agent): replace with the Visa Case Module's case_get contract.
      */
-    async getCase(caseId: string) {
+    async getCase(caseId: string): Promise<any> {
         throw new Error(`No case provider connected. TODO(visa-agent): implement case lookup for "${caseId}".`);
     }
 
@@ -118,7 +118,7 @@ export class VisaProviderService {
      * TODO(visa-agent): replace with a governed case-withdrawal transition
      * enforced by the Visa Case Module's transition policy.
      */
-    async withdrawCase(caseId: string) {
+    async withdrawCase(caseId: string): Promise<any> {
         throw new Error(`No case provider connected. TODO(visa-agent): implement case withdrawal for "${caseId}".`);
     }
 
