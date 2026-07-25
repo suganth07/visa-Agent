@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Visa Agent MCP server (migrated from the NitroStack Flight Booking OAuth template)",
+  "description": "Visa Agent MCP server",
   "scripts": {
     "dev": "nitrostack-cli dev",
     "build": "nitrostack-cli build",

@@ -1,5 +1,4 @@
 import { McpApp, Module, ConfigModule, OAuthModule } from '@nitrostack/core';
-import { VisaModule } from './modules/visa/visa.module.js';
 import { CaseModule } from './modules/case/case.module.js';
 import { OnboardingModule } from './modules/onboarding/onboarding.module.js';
 import { RequirementModule } from './modules/requirement/requirement.module.js';
@@ -17,10 +16,6 @@ import { SystemHealthCheck } from './health/system.health.js';
  * - Validates tokens with audience binding (RFC 8707)
  *
  * Visa Agent:
- * - VisaModule: migrated from the NitroStack Flight Booking OAuth
- *   template (pathway search, legacy case/appointment/withdrawal tools).
- *   TODO(visa-agent): this is a terminology migration only, not a real
- *   implementation of any docs/MODULES.md module.
  * - CaseModule: first real vertical slice of the Visa Case Module
  *   (docs/MODULES.md §3.1) — case_start and case_get, in-memory only.
  *   TODO(visa-case): see case.service.ts and case.tools.ts for the list of
@@ -55,7 +50,7 @@ import { SystemHealthCheck } from './health/system.health.js';
 })
 @Module({
   name: 'app',
-  description: 'Visa Agent MCP server with OAuth 2.1 authentication (migrated from the NitroStack Flight Booking OAuth template)',
+  description: 'Visa Agent MCP server with OAuth 2.1 authentication',
   imports: [
     ConfigModule.forRoot(),
 
@@ -114,7 +109,6 @@ import { SystemHealthCheck } from './health/system.health.js';
       },
     }),
 
-    VisaModule,
     CaseModule,
     OnboardingModule,
     RequirementModule
