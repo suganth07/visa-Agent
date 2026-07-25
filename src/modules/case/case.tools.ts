@@ -1,4 +1,4 @@
-import { ToolDecorator as Tool, ExecutionContext, z, UseGuards, Injectable } from '@nitrostack/core';
+import { ToolDecorator as Tool, Widget, ExecutionContext, z, UseGuards, Injectable } from '@nitrostack/core';
 import { OAuthGuard } from '../../guards/oauth.guard.js';
 import { VisaCaseService } from './case.service.js';
 
@@ -45,6 +45,7 @@ export class CaseTools {
             }
         }
     })
+    @Widget('migrate-ease')
     @UseGuards(OAuthGuard)
     async caseStart(input: any, ctx: ExecutionContext) {
         ctx.logger.info('Starting visa case', {

@@ -1,4 +1,4 @@
-import { ToolDecorator as Tool, ExecutionContext, z, UseGuards, Injectable } from '@nitrostack/core';
+import { ToolDecorator as Tool, Widget, ExecutionContext, z, UseGuards, Injectable } from '@nitrostack/core';
 import { OAuthGuard } from '../../guards/oauth.guard.js';
 import { RequirementService } from './requirement.service.js';
 import { VisaCaseService } from '../case/case.service.js';
@@ -50,6 +50,7 @@ export class RequirementTools {
             }
         }
     })
+    @Widget('migrate-ease')
     @UseGuards(OAuthGuard)
     async resolveRequirements(input: any, ctx: ExecutionContext) {
         ctx.logger.info('Resolving visa requirements for case', {

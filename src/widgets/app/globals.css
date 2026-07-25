@@ -1,167 +1,145 @@
-/* Nitrocloud Widget Styles - Professional Theme */
+/* MigrateEase design tokens — blue/white brand system. */
 
 :root {
-  /* Professional Color Palette */
-  --primary: #3B82F6;
-  --primary-hover: #2563EB;
-  --secondary: #6B7280;
-  --secondary-hover: #4B5563;
+  --me-blue-50: #eff6ff;
+  --me-blue-100: #dbeafe;
+  --me-blue-200: #bfdbfe;
+  --me-blue-300: #93c5fd;
+  --me-blue-400: #60a5fa;
+  --me-blue-500: #3b82f6;
+  --me-blue-600: #2563eb;
+  --me-blue-700: #1d4ed8;
+  --me-blue-800: #1e40af;
+  --me-blue-900: #1e3a8a;
 
-  --success: #10B981;
-  --warning: #F59E0B;
-  --error: #EF4444;
-  --info: #3B82F6;
+  --me-surface: #ffffff;
+  --me-surface-alt: #f9fbff;
+  --me-canvas: #f4f8ff;
+  --me-border: #e3ebf8;
+  --me-border-strong: #cddcf3;
 
-  /* Light Theme */
-  --bg-primary: #FFFFFF;
-  --bg-secondary: #F9FAFB;
-  --bg-tertiary: #F3F4F6;
-  --bg-elevated: #FFFFFF;
+  --me-text: #0f1f3d;
+  --me-text-muted: #5b6b88;
+  --me-text-subtle: #8496b3;
 
-  --text-primary: #111827;
-  --text-secondary: #6B7280;
-  --text-muted: #9CA3AF;
+  --me-success: #0e9f6e;
+  --me-success-bg: #e6f8f1;
+  --me-danger: #dc2626;
+  --me-danger-bg: #fdecec;
+  --me-warning: #b45309;
+  --me-warning-bg: #fef4e6;
 
-  --border-color: #E5E7EB;
-  --border-hover: #D1D5DB;
+  --me-radius-sm: 8px;
+  --me-radius: 12px;
+  --me-radius-lg: 18px;
+  --me-shadow-sm: 0 1px 2px rgba(15, 31, 61, 0.06);
+  --me-shadow: 0 4px 16px rgba(15, 31, 61, 0.08);
+  --me-shadow-lg: 0 12px 32px rgba(15, 31, 61, 0.12);
 
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --me-font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --me-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
 }
 
-.dark {
-  /* Dark Theme */
-  --bg-primary: #111827;
-  --bg-secondary: #1F2937;
-  --bg-tertiary: #374151;
-  --bg-elevated: #1F2937;
-
-  --text-primary: #F9FAFB;
-  --text-secondary: #D1D5DB;
-  --text-muted: #9CA3AF;
-
-  --border-color: #374151;
-  --border-hover: #4B5563;
-
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+/* The host controls light/dark. The brand stays blue/white; dark mode keeps
+   the same hues over a deep navy canvas so contrast holds either way. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --me-surface: #101b31;
+    --me-surface-alt: #16233d;
+    --me-canvas: #0a1121;
+    --me-border: #1f2f4d;
+    --me-border-strong: #2c4066;
+    --me-text: #eaf1ff;
+    --me-text-muted: #a3b4d0;
+    --me-text-subtle: #7186a6;
+    --me-blue-50: #14233d;
+    --me-blue-100: #1a2d4d;
+    --me-success-bg: #0f2b22;
+    --me-danger-bg: #2e1618;
+    --me-warning-bg: #2d2211;
+  }
 }
 
-/* Reset */
 * {
   box-sizing: border-box;
+}
+
+html,
+body {
   margin: 0;
   padding: 0;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--me-font);
+  color: var(--me-text);
+  background: var(--me-canvas);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  line-height: 1.55;
 }
 
-/* Card Styles */
-.card {
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 16px;
-  transition: all 0.2s ease;
-  box-shadow: var(--shadow-sm);
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
 }
 
-.card:hover {
-  border-color: var(--border-hover);
-  box-shadow: var(--shadow-md);
+/* ---------- Animations ---------- */
+
+@keyframes me-fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
 }
 
-/* Button Styles */
-.btn-primary {
-  background: var(--primary);
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 6px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 14px;
+@keyframes me-spin {
+  to { transform: rotate(360deg); }
 }
 
-.btn-primary:hover {
-  background: var(--primary-hover);
-  box-shadow: var(--shadow-md);
+@keyframes me-draw-check {
+  to { stroke-dashoffset: 0; }
 }
 
-.btn-secondary {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
-  padding: 10px 20px;
-  border-radius: 6px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 14px;
+@keyframes me-pop {
+  0%   { transform: scale(0.7); opacity: 0; }
+  60%  { transform: scale(1.06); opacity: 1; }
+  100% { transform: scale(1); }
 }
 
-.btn-secondary:hover {
-  background: var(--bg-tertiary);
-  border-color: var(--border-hover);
+@keyframes me-ring {
+  0%   { transform: scale(0.8); opacity: 0.55; }
+  100% { transform: scale(1.9); opacity: 0; }
 }
 
-/* Badge Styles */
-.badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 12px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 600;
+@keyframes me-shimmer {
+  100% { transform: translateX(100%); }
 }
 
-.badge-success {
-  background: rgba(16, 185, 129, 0.1);
-  color: var(--success);
-  border: 1px solid rgba(16, 185, 129, 0.2);
+.me-animate-in {
+  animation: me-fade-up 0.32s ease-out both;
 }
 
-.badge-warning {
-  background: rgba(245, 158, 11, 0.1);
-  color: var(--warning);
-  border: 1px solid rgba(245, 158, 11, 0.2);
+/* Respect reduced-motion: success/entry animations become instant state
+   changes rather than movement. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }
 
-.badge-error {
-  background: rgba(239, 68, 68, 0.1);
-  color: var(--error);
-  border: 1px solid rgba(239, 68, 68, 0.2);
+:focus-visible {
+  outline: 2px solid var(--me-blue-600);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
-.badge-info {
-  background: rgba(59, 130, 246, 0.1);
-  color: var(--info);
-  border: 1px solid rgba(59, 130, 246, 0.2);
-}
-
-.dark .badge-success {
-  background: rgba(16, 185, 129, 0.2);
-  color: #6EE7B7;
-}
-
-.dark .badge-warning {
-  background: rgba(245, 158, 11, 0.2);
-  color: #FCD34D;
-}
-
-.dark .badge-error {
-  background: rgba(239, 68, 68, 0.2);
-  color: #FCA5A5;
-}
-
-.dark .badge-info {
-  background: rgba(59, 130, 246, 0.2);
-  color: #93C5FD;
+::placeholder {
+  color: var(--me-text-subtle);
 }

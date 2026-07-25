@@ -1,4 +1,4 @@
-import { ToolDecorator as Tool, ExecutionContext, z, UseGuards, Injectable } from '@nitrostack/core';
+import { ToolDecorator as Tool, Widget, ExecutionContext, z, UseGuards, Injectable } from '@nitrostack/core';
 import { OAuthGuard } from '../../guards/oauth.guard.js';
 import { OnboardingService } from './onboarding.service.js';
 
@@ -44,6 +44,7 @@ export class OnboardingTools {
             }
         }
     })
+    @Widget('migrate-ease')
     @UseGuards(OAuthGuard)
     async onboardingExtract(input: any, ctx: ExecutionContext) {
         ctx.logger.info('Processing onboarding message', {

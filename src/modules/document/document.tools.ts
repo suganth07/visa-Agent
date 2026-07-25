@@ -1,4 +1,4 @@
-import { ToolDecorator as Tool, ExecutionContext, z, UseGuards, Injectable } from '@nitrostack/core';
+import { ToolDecorator as Tool, Widget, ExecutionContext, z, UseGuards, Injectable } from '@nitrostack/core';
 import { OAuthGuard } from '../../guards/oauth.guard.js';
 import { DocumentService } from './document.service.js';
 import { VisaCaseService } from '../case/case.service.js';
@@ -166,6 +166,7 @@ export class DocumentTools {
             }
         }
     })
+    @Widget('migrate-ease')
     @UseGuards(OAuthGuard)
     async documentValidate(input: any, ctx: ExecutionContext) {
         ctx.logger.info('Validating document against case', {
