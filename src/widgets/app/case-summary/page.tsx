@@ -3,30 +3,34 @@
 import { useWidgetSDK, useTheme } from '@nitrostack/widgets';
 
 /**
- * Order Summary Widget - Compact booking confirmation
+ * Case Summary Widget - Compact case confirmation
+ *
+ * TODO(visa-agent): this widget is a terminology migration of the
+ * NitroStack Flight Booking OAuth template. Real Visa Agent widgets must
+ * follow docs/WIDGETS.md, including approval-pending and blocked states.
  */
 
-interface OrderData {
-    orderId: string;
+interface CaseData {
+    caseId: string;
     status: string;
-    bookingReference?: string;
-    totalAmount: string;
-    totalCurrency: string;
+    referenceNumber?: string;
+    feeAmount: string;
+    feeCurrency: string;
     createdAt?: string;
     expiresAt?: string;
-    passengers: Array<{ id: string; name: string; type: string; email?: string }>;
-    slices: Array<{
-        origin: { code: string; city?: string };
-        destination: { code: string; city?: string };
-        segments?: Array<{ airline: string; flightNumber: string }>;
+    applicants: Array<{ id: string; name: string; type: string; email?: string }>;
+    stages: Array<{
+        origin: { code: string; region?: string };
+        destination: { code: string; region?: string };
+        steps?: Array<{ authority: string; referenceNumber: string }>;
     }>;
     message?: string;
 }
 
-export default function OrderSummary() {
+export default function CaseSummary() {
     const { getToolOutput } = useWidgetSDK();
     const theme = useTheme();
-    const data = getToolOutput<OrderData>();
+    const data = getToolOutput<CaseData>();
 
     const isDark = theme === 'dark';
 
@@ -41,7 +45,7 @@ export default function OrderSummary() {
     };
 
     const getStatusIcon = (status: string) => {
-        return { 'confirmed': '🎉', 'held': '⏱️', 'cancelled': '✗', 'pending': '⋯' }[status.toLowerCase()] || '📋';
+        return { 'submitted': '🎉', 'initiated': '⏱️', 'withdrawn': '✗', 'pending': '⋯' }[status.toLowerCase()] || '📋';
     };
 
     if (!data) {
@@ -60,17 +64,17 @@ export default function OrderSummary() {
                     {getStatusIcon(data.status)}
                 </div>
                 <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 700, marginBottom: '8px' }}>
-                    {data.status === 'confirmed' ? 'Booking Confirmed!' :
-                        data.status === 'held' ? 'Order On Hold' : 'Order Summary'}
+                    {data.status === 'submitted' ? 'Case Submitted!' :
+                        data.status === 'initiated' ? 'Case Initiated' : 'Case Summary'}
                 </h2>
 
-                {data.bookingReference && (
+                {data.referenceNumber && (
                     <div style={{ fontSize: '14px', color: isDark ? '#94A3B8' : '#64748B', marginBottom: '12px' }}>
-                        Reference: <strong style={{ color: "var(--primary)", fontWeight: 700 }}>{data.bookingReference}</strong>
+                        Reference: <strong style={{ color: "var(--primary)", fontWeight: 700 }}>{data.referenceNumber}</strong>
                     </div>
                 )}
 
-                <div className={`badge badge-${data.status === 'confirmed' ? 'success' : data.status === 'held' ? 'warning' : 'info'}`}>
+                <div className={`badge badge-${data.status === 'submitted' ? 'success' : data.status === 'initiated' ? 'warning' : 'info'}`}>
                     {data.status.toUpperCase()}
                 </div>
 
@@ -86,7 +90,7 @@ export default function OrderSummary() {
                     </div>
                 )}
 
-                {data.expiresAt && data.status === 'held' && (
+                {data.expiresAt && data.status === 'initiated' && (
                     <div style={{
                         marginTop: '12px',
                         padding: '12px',
@@ -95,7 +99,7 @@ export default function OrderSummary() {
                         border: '1px solid #F59E0B'
                     }}>
                         <div style={{ fontSize: '11px', fontWeight: 600, color: '#92400E', marginBottom: '4px' }}>
-                            ⏰ Payment Required
+                            ⏰ Fee Payment Required
                         </div>
                         <div style={{ fontSize: '10px', color: '#78350F' }}>
                             Complete before: <strong>{formatDateTime(data.expiresAt)}</strong>
@@ -104,18 +108,18 @@ export default function OrderSummary() {
                 )}
             </div>
 
-            {/* Order Info */}
+            {/* Case Info */}
             <div className="card" style={{ marginBottom: '12px' }}>
-                <h3 style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: 600 }}>Order Information</h3>
+                <h3 style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: 600 }}>Case Information</h3>
                 <div style={{ display: 'grid', gap: '8px', fontSize: '12px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <span style={{ color: isDark ? '#94A3B8' : '#64748B' }}>Order ID:</span>
-                        <span style={{ fontWeight: 600, fontFamily: 'monospace' }}>{data.orderId}</span>
+                        <span style={{ color: isDark ? '#94A3B8' : '#64748B' }}>Case ID:</span>
+                        <span style={{ fontWeight: 600, fontFamily: 'monospace' }}>{data.caseId}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '8px', borderTop: `1px solid ${isDark ? '#334155' : '#E2E8F0'}` }}>
-                        <span style={{ color: isDark ? '#94A3B8' : '#64748B' }}>Total:</span>
+                        <span style={{ color: isDark ? '#94A3B8' : '#64748B' }}>Fee:</span>
                         <span style={{ color: 'var(--primary)', fontWeight: 700, fontSize: '16px' }}>
-                            {data.totalCurrency} {parseFloat(data.totalAmount).toFixed(2)}
+                            {data.feeCurrency} {parseFloat(data.feeAmount).toFixed(2)}
                         </span>
                     </div>
                     {data.createdAt && (
@@ -127,15 +131,15 @@ export default function OrderSummary() {
                 </div>
             </div>
 
-            {/* Passengers */}
+            {/* Applicants */}
             <div className="card" style={{ marginBottom: '12px' }}>
                 <h3 style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <span>👥</span>
-                    <span>Passengers ({data.passengers.length})</span>
+                    <span>Applicants ({data.applicants.length})</span>
                 </h3>
                 <div style={{ display: 'grid', gap: '8px' }}>
-                    {data.passengers.map((passenger, index) => (
-                        <div key={passenger.id} style={{
+                    {data.applicants.map((applicant, index) => (
+                        <div key={applicant.id} style={{
                             padding: '12px',
                             background: isDark ? '#0F172A' : '#0F172A',
                             borderRadius: '8px',
@@ -145,14 +149,14 @@ export default function OrderSummary() {
                         }}>
                             <div>
                                 <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '2px' }}>
-                                    {passenger.name}
+                                    {applicant.name}
                                 </div>
                                 <div style={{ fontSize: '11px', color: isDark ? '#94A3B8' : '#64748B' }}>
-                                    {passenger.type}
+                                    {applicant.type}
                                 </div>
-                                {passenger.email && (
+                                {applicant.email && (
                                     <div style={{ fontSize: '10px', color: isDark ? '#94A3B8' : '#64748B', marginTop: '2px' }}>
-                                        📧 {passenger.email}
+                                        📧 {applicant.email}
                                     </div>
                                 )}
                             </div>
@@ -176,21 +180,21 @@ export default function OrderSummary() {
                 </div>
             </div>
 
-            {/* Flight Itinerary */}
+            {/* Processing Itinerary */}
             <div className="card">
                 <h3 style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span>✈️</span>
-                    <span>Flight Itinerary</span>
+                    <span>📄</span>
+                    <span>Processing Itinerary</span>
                 </h3>
                 <div style={{ display: 'grid', gap: '12px' }}>
-                    {data.slices.map((slice, index) => (
+                    {data.stages.map((stage, index) => (
                         <div key={index} style={{
                             padding: '12px',
                             background: isDark ? '#0F172A' : '#F8FAFC',
                             borderRadius: '8px'
                         }}>
                             <div style={{ fontSize: '12px', fontWeight: 600, color: '#3B9FFF', marginBottom: '10px' }}>
-                                {index === 0 ? 'Outbound' : 'Return'} Flight
+                                {index === 0 ? 'Outbound' : 'Return'} Stage
                             </div>
                             <div style={{
                                 display: 'grid',
@@ -200,11 +204,11 @@ export default function OrderSummary() {
                             }}>
                                 <div>
                                     <div style={{ fontSize: '16px', fontWeight: 700 }}>
-                                        {slice.origin.code}
+                                        {stage.origin.code}
                                     </div>
-                                    {slice.origin.city && (
+                                    {stage.origin.region && (
                                         <div style={{ fontSize: '11px', color: isDark ? '#94A3B8' : '#64748B', marginTop: '2px' }}>
-                                            {slice.origin.city}
+                                            {stage.origin.region}
                                         </div>
                                     )}
                                 </div>
@@ -217,21 +221,21 @@ export default function OrderSummary() {
 
                                 <div style={{ textAlign: 'right' }}>
                                     <div style={{ fontSize: '16px', fontWeight: 700 }}>
-                                        {slice.destination.code}
+                                        {stage.destination.code}
                                     </div>
-                                    {slice.destination.city && (
+                                    {stage.destination.region && (
                                         <div style={{ fontSize: '11px', color: isDark ? '#94A3B8' : '#64748B', marginTop: '2px' }}>
-                                            {slice.destination.city}
+                                            {stage.destination.region}
                                         </div>
                                     )}
                                 </div>
                             </div>
 
-                            {slice.segments && slice.segments.length > 0 && (
+                            {stage.steps && stage.steps.length > 0 && (
                                 <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: `1px solid ${isDark ? '#334155' : '#E2E8F0'}` }}>
-                                    {slice.segments.map((segment, segIndex) => (
-                                        <div key={segIndex} style={{ fontSize: '11px', color: isDark ? '#94A3B8' : '#64748B', marginBottom: '4px' }}>
-                                            {segment.airline} {segment.flightNumber}
+                                    {stage.steps.map((step, stepIndex) => (
+                                        <div key={stepIndex} style={{ fontSize: '11px', color: isDark ? '#94A3B8' : '#64748B', marginBottom: '4px' }}>
+                                            {step.authority} {step.referenceNumber}
                                         </div>
                                     ))}
                                 </div>

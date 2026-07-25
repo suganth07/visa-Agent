@@ -1,27 +1,31 @@
 import { McpApp, Module, ConfigModule, OAuthModule } from '@nitrostack/core';
-import { FlightsModule } from './modules/flights/flights.module.js';
+import { VisaModule } from './modules/visa/visa.module.js';
 import { SystemHealthCheck } from './health/system.health.js';
 
 /**
  * Root Application Module
- * 
+ *
  * This is the main module that bootstraps the MCP server.
  * It registers all feature modules and health checks.
- * 
+ *
  * OAuth 2.1 Authentication:
  * - Configured with Auth0 as the authorization server
  * - Supports read, write, and admin scopes
  * - Validates tokens with audience binding (RFC 8707)
- * 
- * Flight Booking System:
- * - Powered by Duffel API
- * - Professional flight search and booking capabilities
- * - Comprehensive widgets for search results and flight details
+ *
+ * Visa Agent:
+ * - Migrated from the NitroStack Flight Booking OAuth template
+ * - Visa pathway search and case intake capabilities
+ * - Widgets for pathway results and case details
+ * - TODO(visa-agent): this module composition is a terminology migration
+ *   only. See docs/ARCHITECTURE.md and docs/MODULES.md for the target
+ *   Visa Agent module set (Case, Client, Operations, Documents, Policy
+ *   Knowledge, Broker, Task, Approval, Notification, Audit).
  */
 @McpApp({
   module: AppModule,
   server: {
-    name: 'airline-ticketing-server',
+    name: 'visa-agent-server',
     version: '1.0.0'
   },
   logging: {
@@ -30,7 +34,7 @@ import { SystemHealthCheck } from './health/system.health.js';
 })
 @Module({
   name: 'app',
-  description: 'Airline ticketing MCP server with OAuth 2.1 authentication and Duffel integration',
+  description: 'Visa Agent MCP server with OAuth 2.1 authentication (migrated from the NitroStack Flight Booking OAuth template)',
   imports: [
     ConfigModule.forRoot(),
 
@@ -89,7 +93,7 @@ import { SystemHealthCheck } from './health/system.health.js';
       },
     }),
 
-    FlightsModule
+    VisaModule
   ],
   providers: [
     // Health Checks

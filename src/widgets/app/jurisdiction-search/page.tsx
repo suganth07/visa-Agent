@@ -3,42 +3,46 @@
 import { useWidgetSDK, useTheme } from '@nitrostack/widgets';
 
 /**
- * Airport Search Widget
- * 
- * Compact display of airport search results with IATA codes and locations.
+ * Jurisdiction Search Widget
+ *
+ * Compact display of jurisdiction search results with codes and locations.
+ *
+ * TODO(visa-agent): this widget is a terminology migration of the
+ * NitroStack Flight Booking OAuth template. Real Visa Agent widgets must
+ * follow docs/WIDGETS.md.
  */
 
-interface AirportResult {
+interface JurisdictionResult {
     id: string;
     name: string;
-    iataCode: string;
-    icaoCode?: string;
-    cityName?: string;
+    code: string;
+    regionCode?: string;
+    region?: string;
     type: string;
     latitude?: number;
     longitude?: number;
     timeZone?: string;
 }
 
-interface AirportSearchData {
+interface JurisdictionSearchData {
     query: string;
-    results: AirportResult[];
+    results: JurisdictionResult[];
 }
 
-export default function AirportSearch() {
+export default function JurisdictionSearch() {
     const { getToolOutput } = useWidgetSDK();
     const theme = useTheme();
-    const data = getToolOutput<AirportSearchData>();
+    const data = getToolOutput<JurisdictionSearchData>();
 
     const isDark = theme === 'dark';
 
     const getTypeIcon = (type: string) => {
         const icons: Record<string, string> = {
-            'airport': '✈️',
+            'jurisdiction': '🏛️',
             'city': '🏙️',
-            'station': '🚉',
-            'bus_station': '🚌',
-            'heliport': '🚁'
+            'region': '🗺️',
+            'consulate': '🏢',
+            'embassy': '🏛️'
         };
         return icons[type] || '📍';
     };
@@ -77,7 +81,7 @@ export default function AirportSearch() {
                         fontSize: '18px',
                         fontWeight: 700
                     }}>
-                        Airport Search
+                        Jurisdiction Search
                     </h2>
                 </div>
                 <p style={{
@@ -107,8 +111,8 @@ export default function AirportSearch() {
                     scrollbarWidth: 'thin',
                     scrollbarColor: isDark ? '#334155 #0F172A' : '#CBD5E1 #F1F5F9'
                 }}>
-                    {data.results.map((airport) => (
-                        <div key={airport.id} style={{
+                    {data.results.map((jurisdiction) => (
+                        <div key={jurisdiction.id} style={{
                             minWidth: '300px',
                             maxWidth: '300px',
                             background: isDark ? '#1a1a1a' : '#ffffff',
@@ -146,7 +150,7 @@ export default function AirportSearch() {
                                         marginBottom: '6px'
                                     }}>
                                         <span style={{ fontSize: '20px' }}>
-                                            {getTypeIcon(airport.type)}
+                                            {getTypeIcon(jurisdiction.type)}
                                         </span>
                                         <div>
                                             <h3 style={{
@@ -154,15 +158,15 @@ export default function AirportSearch() {
                                                 fontSize: '16px',
                                                 fontWeight: 600
                                             }}>
-                                                {airport.name}
+                                                {jurisdiction.name}
                                             </h3>
-                                            {airport.cityName && (
+                                            {jurisdiction.region && (
                                                 <p style={{
                                                     margin: '2px 0 0 0',
                                                     fontSize: '12px',
                                                     color: isDark ? '#94A3B8' : '#64748B'
                                                 }}>
-                                                    📍 {airport.cityName}
+                                                    📍 {jurisdiction.region}
                                                 </p>
                                             )}
                                         </div>
@@ -177,16 +181,16 @@ export default function AirportSearch() {
                                         fontSize: '11px',
                                         color: isDark ? '#94A3B8' : '#64748B'
                                     }}>
-                                        {airport.timeZone && (
+                                        {jurisdiction.timeZone && (
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                                 <span>🕐</span>
-                                                <span>{airport.timeZone}</span>
+                                                <span>{jurisdiction.timeZone}</span>
                                             </div>
                                         )}
-                                        {airport.latitude && airport.longitude && (
+                                        {jurisdiction.latitude && jurisdiction.longitude && (
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                                 <span>🌍</span>
-                                                <span>{airport.latitude.toFixed(2)}, {airport.longitude.toFixed(2)}</span>
+                                                <span>{jurisdiction.latitude.toFixed(2)}, {jurisdiction.longitude.toFixed(2)}</span>
                                             </div>
                                         )}
                                     </div>
@@ -199,7 +203,7 @@ export default function AirportSearch() {
                                     gap: '6px',
                                     alignItems: 'flex-end'
                                 }}>
-                                    {/* IATA Code */}
+                                    {/* Jurisdiction Code */}
                                     <div style={{
                                         background: 'var(--primary)',
                                         color: 'white',
@@ -209,11 +213,11 @@ export default function AirportSearch() {
                                         fontSize: '16px',
                                         letterSpacing: '0.5px'
                                     }}>
-                                        {airport.iataCode || 'N/A'}
+                                        {jurisdiction.code || 'N/A'}
                                     </div>
 
-                                    {/* ICAO Code */}
-                                    {airport.icaoCode && (
+                                    {/* Region Code */}
+                                    {jurisdiction.regionCode && (
                                         <div style={{
                                             background: isDark ? '#1E293B' : '#F1F5F9',
                                             color: isDark ? '#CBD5E1' : '#475569',
@@ -222,13 +226,13 @@ export default function AirportSearch() {
                                             fontSize: '10px',
                                             fontWeight: 600
                                         }}>
-                                            ICAO: {airport.icaoCode}
+                                            Region: {jurisdiction.regionCode}
                                         </div>
                                     )}
 
                                     {/* Type badge */}
                                     <div className="badge badge-info" style={{ fontSize: '10px' }}>
-                                        {airport.type.replace('_', ' ')}
+                                        {jurisdiction.type.replace('_', ' ')}
                                     </div>
                                 </div>
                             </div>
@@ -244,10 +248,10 @@ export default function AirportSearch() {
                 }}>
                     <div style={{ fontSize: '48px', marginBottom: '12px' }}>🔍</div>
                     <div style={{ fontSize: '16px', marginBottom: '6px' }}>
-                        No airports found
+                        No jurisdictions found
                     </div>
                     <div style={{ fontSize: '12px', color: isDark ? '#94A3B8' : '#64748B' }}>
-                        Try a different city or airport code
+                        Try a different country or jurisdiction code
                     </div>
                 </div>
             )}
@@ -263,7 +267,7 @@ export default function AirportSearch() {
                 textAlign: 'center',
                 border: `1px solid ${isDark ? '#334155' : '#E2E8F0'}`
             }}>
-                💡 <strong>Tip:</strong> Use the IATA code (3-letter) for flight searches
+                💡 <strong>Tip:</strong> Use the jurisdiction code for visa pathway searches
             </div>
         </div>
     );

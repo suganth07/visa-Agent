@@ -2,392 +2,362 @@
   "version": "1.0.0",
   "widgets": [
     {
-      "uri": "/flight-search-results",
-      "name": "Flight Search Results",
-      "description": "Displays flight search results with pricing, airlines, and flight details",
+      "uri": "/pathway-search-results",
+      "name": "Visa Pathway Search Results",
+      "description": "Displays visa pathway search results with fees, authorities, and processing details",
       "examples": [
         {
           "name": "Round Trip Search",
-          "description": "Shows results for a round trip flight search",
+          "description": "Shows results for a round-trip visa pathway search",
           "data": {
-            "requestId": "orq_example123",
+            "requestId": "req_example123",
             "searchParams": {
-              "origin": "JFK",
-              "destination": "LAX",
-              "departureDate": "2024-03-15",
-              "returnDate": "2024-03-22",
-              "passengers": {
-                "adults": 2,
-                "children": 0,
-                "infants": 0
+              "nationality": "US",
+              "destination": "FR",
+              "intendedTravelDate": "2024-03-15",
+              "intendedReturnDate": "2024-03-22",
+              "applicants": {
+                "primaryApplicants": 2,
+                "dependents": 0,
+                "minors": 0
               },
-              "cabinClass": "economy"
+              "serviceTier": "standard"
             },
-            "totalOffers": 15,
-            "offers": [
+            "totalPathways": 15,
+            "pathways": [
               {
-                "id": "off_example123",
-                "totalAmount": "450.00",
-                "totalCurrency": "USD",
+                "id": "pth_example123",
+                "feeAmount": "450.00",
+                "feeCurrency": "USD",
                 "expiresAt": "2024-03-01T12:00:00Z",
-                "outbound": {
-                  "origin": "JFK",
-                  "destination": "LAX",
-                  "departureTime": "2024-03-15T08:00:00Z",
-                  "arrivalTime": "2024-03-15T14:30:00Z",
+                "primaryStage": {
+                  "origin": "US",
+                  "destination": "FR",
+                  "startAt": "2024-03-15T08:00:00Z",
+                  "completeAt": "2024-03-15T14:30:00Z",
                   "duration": "PT6H30M",
-                  "stops": 0,
-                  "airline": "American Airlines",
-                  "flightNumber": "AA123",
-                  "segments": []
+                  "handoffs": 0,
+                  "authority": "French Consular Services",
+                  "referenceNumber": "FR-VISA-123",
+                  "steps": []
                 },
-                "return": {
-                  "origin": "LAX",
-                  "destination": "JFK",
-                  "departureTime": "2024-03-22T16:00:00Z",
-                  "arrivalTime": "2024-03-23T00:30:00Z",
+                "returnStage": {
+                  "origin": "FR",
+                  "destination": "US",
+                  "startAt": "2024-03-22T16:00:00Z",
+                  "completeAt": "2024-03-23T00:30:00Z",
                   "duration": "PT5H30M",
-                  "stops": 0,
-                  "airline": "American Airlines",
-                  "flightNumber": "AA456",
-                  "segments": []
+                  "handoffs": 0,
+                  "authority": "French Consular Services",
+                  "referenceNumber": "FR-VISA-456",
+                  "steps": []
                 },
-                "fareType": "Domestic",
-                "refundable": false,
-                "changeable": true
+                "caseComplexity": "Standard",
+                "withdrawable": false,
+                "amendable": true
               }
             ],
-            "message": "Found 15 flight options"
+            "message": "Found 15 visa pathway options"
           }
         }
       ],
       "tags": [
-        "flights",
+        "visa",
         "search",
-        "travel",
-        "booking"
+        "case",
+        "pathways"
       ]
     },
     {
-      "uri": "/flight-details",
-      "name": "Flight Details",
-      "description": "Displays comprehensive flight details including segments, baggage, and fare conditions",
+      "uri": "/pathway-details",
+      "name": "Visa Pathway Details",
+      "description": "Displays comprehensive visa pathway details including processing steps, required documents, and case conditions",
       "examples": [
         {
-          "name": "Flight Details Example",
-          "description": "Shows detailed information for a specific flight offer",
+          "name": "Pathway Details Example",
+          "description": "Shows detailed information for a specific visa pathway",
           "data": {
-            "id": "off_example123",
-            "totalAmount": "450.00",
-            "totalCurrency": "USD",
+            "id": "pth_example123",
+            "feeAmount": "450.00",
+            "feeCurrency": "USD",
             "expiresAt": "2024-03-01T12:00:00Z",
-            "slices": [
+            "stages": [
               {
                 "origin": {
-                  "code": "JFK",
-                  "name": "John F. Kennedy International Airport",
-                  "city": "New York"
+                  "code": "US",
+                  "name": "United States",
+                  "region": "North America"
                 },
                 "destination": {
-                  "code": "LAX",
-                  "name": "Los Angeles International Airport",
-                  "city": "Los Angeles"
+                  "code": "FR",
+                  "name": "France",
+                  "region": "Europe"
                 },
                 "duration": "PT6H30M",
-                "segments": [
+                "steps": [
                   {
-                    "id": "seg_123",
-                    "origin": "JFK",
-                    "destination": "LAX",
-                    "departingAt": "2024-03-15T08:00:00Z",
-                    "arrivingAt": "2024-03-15T14:30:00Z",
+                    "id": "stp_123",
+                    "origin": "US",
+                    "destination": "FR",
+                    "startAt": "2024-03-15T08:00:00Z",
+                    "completeAt": "2024-03-15T14:30:00Z",
                     "duration": "PT6H30M",
-                    "airline": {
-                      "name": "American Airlines",
-                      "code": "AA",
-                      "flightNumber": "123"
+                    "authority": {
+                      "name": "French Consular Services",
+                      "code": "FR-CS",
+                      "referenceNumber": "123"
                     },
-                    "aircraft": "Boeing 777-300ER"
+                    "processingFacility": "Visa Application Center"
                   }
                 ]
               }
             ],
-            "passengers": [
+            "applicants": [
               {
-                "id": "pas_123",
-                "type": "adult",
-                "fareType": "economy",
-                "baggageAllowance": [
+                "id": "app_123",
+                "type": "primary",
+                "caseTier": "standard",
+                "requiredDocuments": [
                   {
-                    "type": "checked",
+                    "type": "primary",
                     "quantity": 1
                   },
                   {
-                    "type": "carry_on",
+                    "type": "supporting",
                     "quantity": 1
                   }
                 ]
               }
             ],
             "conditions": {
-              "refundBeforeDeparture": {
+              "withdrawalBeforeSubmission": {
                 "allowed": false
               },
-              "changeBeforeDeparture": {
+              "amendmentBeforeSubmission": {
                 "allowed": true,
                 "penaltyAmount": "75.00",
                 "penaltyCurrency": "USD"
               }
             },
-            "paymentRequirements": {
-              "requiresInstantPayment": true,
-              "priceGuaranteeExpiresAt": "2024-03-01T12:00:00Z"
+            "feeRequirements": {
+              "requiresInstantFee": true,
+              "feeGuaranteeExpiresAt": "2024-03-01T12:00:00Z"
             }
           }
         }
       ],
       "tags": [
-        "flights",
+        "visa",
         "details",
-        "travel",
-        "booking"
+        "case",
+        "pathways"
       ]
     },
     {
-      "uri": "/airport-search",
-      "name": "Airport Search",
-      "description": "Displays airport search results with IATA codes and location details",
+      "uri": "/jurisdiction-search",
+      "name": "Jurisdiction Search",
+      "description": "Displays jurisdiction search results with country/authority codes and location details",
       "examples": [
         {
-          "name": "London Airports",
-          "description": "Shows search results for London airports",
+          "name": "France Jurisdiction",
+          "description": "Shows search results for France",
           "data": {
-            "query": "London",
+            "query": "France",
             "results": [
               {
-                "id": "arp_lhr_gb",
-                "name": "Heathrow Airport",
-                "iataCode": "LHR",
-                "icaoCode": "EGLL",
-                "cityName": "London",
-                "type": "airport",
-                "latitude": 51.4700,
-                "longitude": -0.4543,
-                "timeZone": "Europe/London"
-              },
-              {
-                "id": "arp_lgw_gb",
-                "name": "Gatwick Airport",
-                "iataCode": "LGW",
-                "icaoCode": "EGKK",
-                "cityName": "London",
-                "type": "airport",
-                "latitude": 51.1537,
-                "longitude": -0.1821,
-                "timeZone": "Europe/London"
-              },
-              {
-                "id": "arp_stn_gb",
-                "name": "Stansted Airport",
-                "iataCode": "STN",
-                "icaoCode": "EGSS",
-                "cityName": "London",
-                "type": "airport",
-                "latitude": 51.8860,
-                "longitude": 0.2389,
-                "timeZone": "Europe/London"
+                "id": "jur_fr",
+                "name": "France",
+                "code": "FR",
+                "regionCode": "EUR",
+                "region": "Europe",
+                "type": "jurisdiction",
+                "latitude": 46.2276,
+                "longitude": 2.2137,
+                "timeZone": "Europe/Paris"
               }
             ]
           }
         }
       ],
       "tags": [
-        "airports",
+        "jurisdictions",
         "search",
-        "travel",
-        "iata"
+        "visa",
+        "reference"
       ]
     },
     {
-      "uri": "/order-summary",
-      "name": "Order Summary",
-      "description": "Displays booking confirmation with order details, passenger information, and flight itinerary",
+      "uri": "/case-summary",
+      "name": "Case Summary",
+      "description": "Displays case confirmation with case details, applicant information, and processing itinerary",
       "examples": [
         {
-          "name": "Confirmed Booking",
-          "description": "Shows a confirmed flight booking with all details",
+          "name": "Submitted Case",
+          "description": "Shows a submitted visa case with all details",
           "data": {
-            "orderId": "ord_example123",
-            "status": "confirmed",
-            "bookingReference": "ABC123",
-            "totalAmount": "450.00",
-            "totalCurrency": "USD",
+            "caseId": "case_example123",
+            "status": "submitted",
+            "referenceNumber": "ABC123",
+            "feeAmount": "450.00",
+            "feeCurrency": "USD",
             "createdAt": "2024-03-01T10:00:00Z",
-            "passengers": [
+            "applicants": [
               {
-                "id": "pax_1",
+                "id": "app_1",
                 "name": "John Doe",
-                "type": "adult",
+                "type": "primary",
                 "email": "john@example.com"
               }
             ],
-            "slices": [
+            "stages": [
               {
                 "origin": {
-                  "code": "JFK",
-                  "name": "John F. Kennedy International",
-                  "city": "New York"
+                  "code": "US",
+                  "name": "United States",
+                  "region": "North America"
                 },
                 "destination": {
-                  "code": "LAX",
-                  "name": "Los Angeles International",
-                  "city": "Los Angeles"
+                  "code": "FR",
+                  "name": "France",
+                  "region": "Europe"
                 },
-                "departureTime": "2024-03-15T08:00:00Z",
-                "arrivalTime": "2024-03-15T14:30:00Z",
-                "segments": []
+                "startAt": "2024-03-15T08:00:00Z",
+                "completeAt": "2024-03-15T14:30:00Z",
+                "steps": []
               }
             ],
-            "message": "Your booking has been confirmed!"
+            "message": "Your case has been submitted!"
           }
         }
       ],
       "tags": [
-        "booking",
-        "order",
+        "case",
+        "visa",
         "confirmation",
-        "travel"
+        "intake"
       ]
     },
     {
-      "uri": "/seat-selection",
-      "name": "Seat Selection",
-      "description": "Interactive seat map for selecting seats with real-time pricing and availability",
+      "uri": "/appointment-slot-selection",
+      "name": "Appointment Slot Selection",
+      "description": "Interactive appointment map for selecting a visa application center slot with real-time pricing and availability",
       "examples": [
         {
-          "name": "Economy Cabin Seats",
-          "description": "Shows available seats in economy cabin",
+          "name": "Standard Facility Slots",
+          "description": "Shows available appointment slots at a standard facility",
           "data": {
-            "offerId": "off_example123",
-            "cabins": [
+            "pathwayId": "pth_example123",
+            "centers": [
               {
-                "cabinClass": "economy",
-                "rows": [
+                "facilityType": "standard",
+                "timeBlocks": [
                   {
-                    "rowNumber": 10,
-                    "seats": [
+                    "blockLabel": "Morning",
+                    "slots": [
                       {
-                        "id": "seat_10a",
-                        "column": "A",
+                        "id": "slot_10a",
+                        "label": "09:00",
                         "available": true,
-                        "price": "0",
+                        "fee": "0",
                         "currency": "USD",
-                        "type": "window"
+                        "type": "in-person"
                       },
                       {
-                        "id": "seat_10b",
-                        "column": "B",
+                        "id": "slot_10b",
+                        "label": "09:30",
                         "available": true,
-                        "price": "0",
+                        "fee": "0",
                         "currency": "USD",
-                        "type": "middle"
-                      },
-                      {
-                        "id": "seat_10c",
-                        "column": "C",
-                        "available": true,
-                        "price": "0",
-                        "currency": "USD",
-                        "type": "aisle"
+                        "type": "in-person"
                       }
                     ]
                   }
                 ]
               }
             ],
-            "message": "Select your preferred seats"
+            "message": "Select your preferred appointment slot"
           }
         }
       ],
       "tags": [
-        "seats",
+        "appointment",
         "selection",
-        "booking",
-        "travel"
+        "case",
+        "visa"
       ]
     },
     {
-      "uri": "/payment-confirmation",
-      "name": "Payment Confirmation",
-      "description": "Payment processing and confirmation interface with order summary",
+      "uri": "/fee-payment-confirmation",
+      "name": "Fee Payment Confirmation",
+      "description": "Fee payment processing and confirmation interface with case summary",
       "examples": [
         {
-          "name": "Payment Success",
-          "description": "Shows successful payment confirmation",
+          "name": "Fee Payment Success",
+          "description": "Shows successful fee payment confirmation",
           "data": {
-            "orderId": "ord_example123",
-            "status": "confirmed",
-            "totalAmount": "450.00",
-            "totalCurrency": "USD",
-            "bookingReference": "ABC123",
-            "message": "Payment confirmed successfully!"
+            "caseId": "case_example123",
+            "status": "submitted",
+            "feeAmount": "450.00",
+            "feeCurrency": "USD",
+            "referenceNumber": "ABC123",
+            "message": "Fee payment confirmed successfully!"
           }
         },
         {
-          "name": "Payment Pending",
-          "description": "Shows payment pending state",
+          "name": "Fee Payment Pending",
+          "description": "Shows fee payment pending state",
           "data": {
-            "orderId": "ord_example456",
+            "caseId": "case_example456",
             "status": "pending",
-            "totalAmount": "650.00",
-            "totalCurrency": "USD"
+            "feeAmount": "650.00",
+            "feeCurrency": "USD"
           }
         }
       ],
       "tags": [
+        "fee",
         "payment",
         "confirmation",
-        "booking",
-        "checkout"
+        "case"
       ]
     },
     {
-      "uri": "/order-cancellation",
-      "name": "Order Cancellation",
-      "description": "Order cancellation confirmation with refund information and status",
+      "uri": "/case-withdrawal",
+      "name": "Case Withdrawal",
+      "description": "Case withdrawal confirmation with fee refund information and status",
       "examples": [
         {
-          "name": "Cancellation with Refund",
-          "description": "Shows successful cancellation with refund",
+          "name": "Withdrawal with Refund",
+          "description": "Shows successful withdrawal with refund",
           "data": {
-            "orderId": "ord_example123",
-            "cancellationId": "ocr_example123",
-            "status": "cancelled",
-            "refundAmount": "450.00",
-            "refundCurrency": "USD",
+            "caseId": "case_example123",
+            "withdrawalId": "wcr_example123",
+            "status": "withdrawn",
+            "feeRefundAmount": "450.00",
+            "feeRefundCurrency": "USD",
             "confirmedAt": "2024-03-01T12:00:00Z",
-            "message": "Order cancelled. Refund of USD 450.00 will be processed."
+            "message": "Case withdrawn. Refund of USD 450.00 will be processed."
           }
         },
         {
-          "name": "Cancellation without Refund",
-          "description": "Shows cancellation with no refund",
+          "name": "Withdrawal without Refund",
+          "description": "Shows withdrawal with no refund",
           "data": {
-            "orderId": "ord_example456",
-            "cancellationId": "ocr_example456",
-            "status": "cancelled",
-            "refundAmount": "0",
-            "refundCurrency": "USD",
+            "caseId": "case_example456",
+            "withdrawalId": "wcr_example456",
+            "status": "withdrawn",
+            "feeRefundAmount": "0",
+            "feeRefundCurrency": "USD",
             "confirmedAt": "2024-03-01T12:00:00Z",
-            "message": "Order cancelled. No refund available for this booking."
+            "message": "Case withdrawn. No refund available."
           }
         }
       ],
       "tags": [
-        "cancellation",
+        "withdrawal",
         "refund",
-        "booking",
-        "order"
+        "case",
+        "visa"
       ]
     }
   ],

@@ -3,61 +3,66 @@
 import { useWidgetSDK, useTheme } from '@nitrostack/widgets';
 
 /**
- * Flight Search Results Widget
- * 
- * Modern, compact display of flight search results with Nitrocloud branding.
+ * Visa Pathway Search Results Widget
+ *
+ * Modern, compact display of visa pathway search results with Nitrocloud branding.
+ *
+ * TODO(visa-agent): this widget is a terminology migration of the
+ * NitroStack Flight Booking OAuth template. Real Visa Agent widgets must
+ * follow docs/WIDGETS.md, including approval-state, freshness, and
+ * authorization-aware states.
  */
 
-interface FlightSegment {
+interface PathwayStage {
     origin: string;
     destination: string;
-    departureTime: string;
-    arrivalTime: string;
+    startAt: string;
+    completeAt: string;
     duration: string;
-    stops: number;
-    airline: string;
-    flightNumber: string;
+    handoffs: number;
+    authority: string;
+    referenceNumber: string;
 }
 
-interface FlightOffer {
+interface PathwayOffer {
     id: string;
-    totalAmount: string;
-    totalCurrency: string;
-    outbound: FlightSegment;
-    return?: FlightSegment;
-    fareType: string;
-    refundable: boolean;
-    changeable: boolean;
+    feeAmount: string;
+    feeCurrency: string;
+    primaryStage: PathwayStage;
+    returnStage?: PathwayStage;
+    caseComplexity: string;
+    withdrawable: boolean;
+    amendable: boolean;
 }
 
-interface FlightSearchData {
+interface PathwaySearchData {
     searchParams: {
-        origin: string;
+        nationality: string;
         destination: string;
-        departureDate: string;
-        returnDate?: string;
-        passengers: {
-            adults: number;
-            children: number;
-            infants: number;
+        intendedTravelDate: string;
+        intendedReturnDate?: string;
+        applicants: {
+            primaryApplicants: number;
+            dependents: number;
+            minors: number;
         };
-        cabinClass: string;
+        serviceTier: string;
     };
-    totalOffers: number;
-    offers: FlightOffer[];
+    totalPathways: number;
+    pathways: PathwayOffer[];
 }
 
-export default function FlightSearchResults() {
+export default function PathwaySearchResults() {
     const { getToolOutput, callTool } = useWidgetSDK();
     const theme = useTheme();
-    const data = getToolOutput<FlightSearchData>();
+    const data = getToolOutput<PathwaySearchData>();
     const isDark = theme === 'dark';
 
-    const handleFlightClick = async (offerId: string) => {
+    const handlePathwayClick = async (pathwayId: string) => {
         try {
-            await callTool('get_flight_details', { offerId });
+            await callTool('get_pathway_details', { pathwayId });
         } catch (error) {
-            console.error('Failed to get flight details:', error);
+            console.error('Failed to get pathway details:', error);
         }
     };
 
@@ -84,7 +89,7 @@ export default function FlightSearchResults() {
         });
     };
 
-    const getAirlineInitials = (name: string) => {
+    const getAuthorityInitials = (name: string) => {
         return name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
     };
 
@@ -100,17 +105,17 @@ export default function FlightSearchResults() {
                     Invalid Data
                 </div>
                 <div style={{ fontSize: '14px', color: isDark ? '#94A3B8' : '#64748B' }}>
-                    Flight search data is missing
+                    Visa pathway search data is missing
                 </div>
             </div>
         );
     }
 
-    const totalPassengers = (data.searchParams.passengers?.adults || 0) +
-        (data.searchParams.passengers?.children || 0) +
-        (data.searchParams.passengers?.infants || 0);
+    const totalApplicants = (data.searchParams.applicants?.primaryApplicants || 0) +
+        (data.searchParams.applicants?.dependents || 0) +
+        (data.searchParams.applicants?.minors || 0);
 
-    const FlightSegment = ({ segment, label }: { segment: FlightSegment; label: string }) => (
+    const PathwayStageView = ({ stage, label }: { stage: PathwayStage; label: string }) => (
         <div style={{
             background: isDark ? '#0F172A' : '#F8FAFC',
             borderRadius: '8px',
@@ -126,7 +131,7 @@ export default function FlightSearchResults() {
                 alignItems: 'center',
                 gap: '6px'
             }}>
-                <span>{label === 'Outbound' ? '✈️' : '🔄'}</span>
+                <span>{label === 'Outbound' ? '📄' : '🔄'}</span>
                 <span>{label}</span>
             </div>
 
@@ -138,10 +143,10 @@ export default function FlightSearchResults() {
             }}>
                 <div style={{ textAlign: 'left' }}>
                     <div style={{ fontSize: '18px', fontWeight: 700, color: isDark ? '#F8FAFC' : '#020617' }}>
-                        {formatTime(segment.departureTime)}
+                        {formatTime(stage.startAt)}
                     </div>
                     <div style={{ fontSize: '12px', color: isDark ? '#94A3B8' : '#64748B', marginTop: '2px' }}>
-                        {segment.origin}
+                        {stage.origin}
                     </div>
                 </div>
 
@@ -153,7 +158,7 @@ export default function FlightSearchResults() {
                     minWidth: '100px'
                 }}>
                     <div style={{ fontSize: '12px', fontWeight: 600, color: isDark ? '#F8FAFC' : '#020617' }}>
-                        {formatDuration(segment.duration)}
+                        {formatDuration(stage.duration)}
                     </div>
                     <div style={{
                         height: '2px',
@@ -161,7 +166,7 @@ export default function FlightSearchResults() {
                         margin: '6px 0',
                         position: 'relative'
                     }}>
-                        {segment.stops > 0 && (
+                        {stage.handoffs > 0 && (
                             <div style={{
                                 width: '6px',
                                 height: '6px',
@@ -175,16 +180,16 @@ export default function FlightSearchResults() {
                         )}
                     </div>
                     <div style={{ fontSize: '10px', color: isDark ? '#94A3B8' : '#64748B' }}>
-                        {segment.stops === 0 ? 'Direct' : `${segment.stops} stop${segment.stops > 1 ? 's' : ''}`}
+                        {stage.handoffs === 0 ? 'Direct' : `${stage.handoffs} handoff${stage.handoffs > 1 ? 's' : ''}`}
                     </div>
                 </div>
 
                 <div style={{ textAlign: 'right' }}>
                     <div style={{ fontSize: '18px', fontWeight: 700, color: isDark ? '#F8FAFC' : '#020617' }}>
-                        {formatTime(segment.arrivalTime)}
+                        {formatTime(stage.completeAt)}
                     </div>
                     <div style={{ fontSize: '12px', color: isDark ? '#94A3B8' : '#64748B', marginTop: '2px' }}>
-                        {segment.destination}
+                        {stage.destination}
                     </div>
                 </div>
             </div>
@@ -220,13 +225,13 @@ export default function FlightSearchResults() {
                         alignItems: 'center',
                         gap: '8px'
                     }}>
-                        <span>{data.searchParams.origin}</span>
-                        <span style={{ color: '#3B9FFF' }}>✈️</span>
+                        <span>{data.searchParams.nationality}</span>
+                        <span style={{ color: '#3B9FFF' }}>→</span>
                         <span>{data.searchParams.destination}</span>
                     </div>
 
                     <div className="badge badge-info">
-                        {data.totalOffers} flights
+                        {data.totalPathways} pathways
                     </div>
                 </div>
 
@@ -240,23 +245,23 @@ export default function FlightSearchResults() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <span>📅</span>
                         <span>
-                            {formatDate(data.searchParams.departureDate)}
-                            {data.searchParams.returnDate && ` - ${formatDate(data.searchParams.returnDate)}`}
+                            {formatDate(data.searchParams.intendedTravelDate)}
+                            {data.searchParams.intendedReturnDate && ` - ${formatDate(data.searchParams.intendedReturnDate)}`}
                         </span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <span>👥</span>
-                        <span>{totalPassengers} pax</span>
+                        <span>{totalApplicants} applicant{totalApplicants !== 1 ? 's' : ''}</span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span>💺</span>
-                        <span>{(data.searchParams.cabinClass || 'economy').replace('_', ' ')}</span>
+                        <span>🏷️</span>
+                        <span>{(data.searchParams.serviceTier || 'standard').replace('_', ' ')}</span>
                     </div>
                 </div>
             </div>
 
-            {/* Flight Offers */}
-            {data.offers.length > 0 ? (
+            {/* Pathway Offers */}
+            {data.pathways.length > 0 ? (
                 <div style={{
                     display: 'flex',
                     gap: '12px',
@@ -265,8 +270,8 @@ export default function FlightSearchResults() {
                     scrollbarWidth: 'thin',
                     scrollbarColor: isDark ? '#334155 #0F172A' : '#CBD5E1 #F1F5F9'
                 }}>
-                    {data.offers.map((offer) => (
-                        <div key={offer.id} style={{
+                    {data.pathways.map((pathway) => (
+                        <div key={pathway.id} style={{
                             minWidth: '320px',
                             maxWidth: '320px',
                             background: isDark ? '#1a1a1a' : '#ffffff',
@@ -277,7 +282,7 @@ export default function FlightSearchResults() {
                             transition: 'all 0.2s ease',
                             cursor: 'pointer'
                         }}
-                            onClick={() => handleFlightClick(offer.id)}
+                            onClick={() => handlePathwayClick(pathway.id)}
                             onMouseEnter={(e) => {
                                 e.currentTarget.style.transform = 'translateY(-2px)';
                                 e.currentTarget.style.boxShadow = isDark
@@ -290,7 +295,7 @@ export default function FlightSearchResults() {
                                     ? '0 2px 8px rgba(0,0,0,0.3)'
                                     : '0 2px 8px rgba(0,0,0,0.1)';
                             }}>
-                            {/* Offer Header */}
+                            {/* Pathway Header */}
                             <div style={{
                                 display: 'flex',
                                 justifyContent: 'space-between',
@@ -312,14 +317,14 @@ export default function FlightSearchResults() {
                                         fontWeight: 700,
                                         fontSize: '14px'
                                     }}>
-                                        {getAirlineInitials(offer.outbound.airline)}
+                                        {getAuthorityInitials(pathway.primaryStage.authority)}
                                     </div>
                                     <div>
                                         <div style={{ fontSize: '14px', fontWeight: 600 }}>
-                                            {offer.outbound.airline}
+                                            {pathway.primaryStage.authority}
                                         </div>
                                         <div style={{ fontSize: '11px', color: isDark ? '#94A3B8' : '#64748B' }}>
-                                            {offer.outbound.flightNumber}
+                                            {pathway.primaryStage.referenceNumber}
                                         </div>
                                     </div>
                                 </div>
@@ -330,17 +335,17 @@ export default function FlightSearchResults() {
                                         fontSize: '24px',
                                         fontWeight: 700
                                     }}>
-                                        {offer.totalCurrency} {parseFloat(offer.totalAmount).toFixed(0)}
+                                        {pathway.feeCurrency} {parseFloat(pathway.feeAmount).toFixed(0)}
                                     </div>
                                     <div style={{ fontSize: '10px', color: isDark ? '#94A3B8' : '#64748B' }}>
-                                        Total
+                                        Fee
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Flight Segments */}
-                            <FlightSegment segment={offer.outbound} label="Outbound" />
-                            {offer.return && <FlightSegment segment={offer.return} label="Return" />}
+                            {/* Pathway Stages */}
+                            <PathwayStageView stage={pathway.primaryStage} label="Outbound" />
+                            {pathway.returnStage && <PathwayStageView stage={pathway.returnStage} label="Return" />}
 
                             {/* Badges */}
                             <div style={{
@@ -349,13 +354,13 @@ export default function FlightSearchResults() {
                                 flexWrap: 'wrap',
                                 marginTop: '12px'
                             }}>
-                                <span className={offer.refundable ? 'badge badge-success' : 'badge badge-warning'}>
-                                    {offer.refundable ? '✓ Refundable' : '✗ Non-refundable'}
+                                <span className={pathway.withdrawable ? 'badge badge-success' : 'badge badge-warning'}>
+                                    {pathway.withdrawable ? '✓ Withdrawable' : '✗ Non-withdrawable'}
                                 </span>
-                                {offer.changeable && (
-                                    <span className="badge badge-success">✓ Changeable</span>
+                                {pathway.amendable && (
+                                    <span className="badge badge-success">✓ Amendable</span>
                                 )}
-                                <span className="badge badge-info">{offer.fareType}</span>
+                                <span className="badge badge-info">{pathway.caseComplexity}</span>
                             </div>
                         </div>
                     ))}
@@ -367,9 +372,9 @@ export default function FlightSearchResults() {
                     padding: '32px',
                     textAlign: 'center'
                 }}>
-                    <div style={{ fontSize: '48px', marginBottom: '12px' }}>✈️</div>
+                    <div style={{ fontSize: '48px', marginBottom: '12px' }}>📄</div>
                     <div style={{ fontSize: '14px', color: isDark ? '#94A3B8' : '#64748B' }}>
-                        No flights found. Try adjusting your search.
+                        No visa pathways found. Try adjusting your search.
                     </div>
                 </div>
             )}

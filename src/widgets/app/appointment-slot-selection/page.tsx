@@ -4,84 +4,88 @@ import { useWidgetSDK, useTheme } from '@nitrostack/widgets';
 import { useState } from 'react';
 
 /**
- * Seat Selection Widget
- * 
- * Interactive seat map with real-time selection for multiple passengers.
+ * Appointment Slot Selection Widget
+ *
+ * Interactive appointment slot map with real-time selection for multiple applicants.
+ *
+ * TODO(visa-agent): this widget is a terminology migration of the
+ * NitroStack Flight Booking OAuth template's seat selection widget. Real
+ * Visa Agent widgets must follow docs/WIDGETS.md.
  */
 
-interface Seat {
+interface Slot {
     id: string;
-    column: string;
+    label: string;
     available: boolean;
-    price?: string;
+    fee?: string;
     type: string;
 }
 
-interface Row {
-    rowNumber: number;
-    seats: Seat[];
+interface TimeBlock {
+    blockLabel: string;
+    slots: Slot[];
 }
 
-interface Cabin {
-    cabinClass: string;
-    rows: Row[];
+interface Center {
+    facilityType: string;
+    timeBlocks: TimeBlock[];
 }
 
-interface SeatMapData {
-    offerId: string;
-    cabins: Cabin[];
+interface AppointmentSlotsData {
+    pathwayId: string;
+    centers: Center[];
     message?: string;
 }
 
-export default function SeatSelection() {
+export default function AppointmentSlotSelection() {
     const { getToolOutput } = useWidgetSDK();
     const theme = useTheme();
-    const data = getToolOutput<SeatMapData>();
+    const data = getToolOutput<AppointmentSlotsData>();
 
     const isDark = theme === 'dark';
-    const [selectedSeats, setSelectedSeats] = useState<Record<string, string>>({});
-    const [activePassenger, setActivePassenger] = useState(0);
-    const [hoveredSeat, setHoveredSeat] = useState<string | null>(null);
+    const [selectedSlots, setSelectedSlots] = useState<Record<string, string>>({});
+    const [activeApplicant, setActiveApplicant] = useState(0);
+    const [hoveredSlot, setHoveredSlot] = useState<string | null>(null);
 
-    const passengers = [
-        { id: 'pax_1', name: 'Passenger 1' },
-        { id: 'pax_2', name: 'Passenger 2' }
+    const applicants = [
+        { id: 'app_1', name: 'Applicant 1' },
+        { id: 'app_2', name: 'Applicant 2' }
     ];
 
-    const handleSeatClick = (seatId: string, seat: Seat) => {
-        if (!seat.available) return;
+    const handleSlotClick = (slotId: string, slot: Slot) => {
+        if (!slot.available) return;
 
-        const currentPassengerId = passengers[activePassenger].id;
-        const seatOwner = Object.entries(selectedSeats).find(([_, id]) => id === seatId)?.[0];
+        const currentApplicantId = applicants[activeApplicant].id;
+        const slotOwner = Object.entries(selectedSlots).find(([_, id]) => id === slotId)?.[0];
 
-        if (seatOwner && seatOwner !== currentPassengerId) return;
+        if (slotOwner && slotOwner !== currentApplicantId) return;
 
-        setSelectedSeats(prev => {
+        setSelectedSlots(prev => {
             const newSelections = { ...prev };
-            if (newSelections[currentPassengerId] === seatId) {
-                delete newSelections[currentPassengerId];
+            if (newSelections[currentApplicantId] === slotId) {
+                delete newSelections[currentApplicantId];
             } else {
-                delete newSelections[currentPassengerId];
-                newSelections[currentPassengerId] = seatId;
-                if (activePassenger < passengers.length - 1) {
-                    setTimeout(() => setActivePassenger(activePassenger + 1), 200);
+                delete newSelections[currentApplicantId];
+                newSelections[currentApplicantId] = slotId;
+                if (activeApplicant < applicants.length - 1) {
+                    setTimeout(() => setActiveApplicant(activeApplicant + 1), 200);
                 }
             }
             return newSelections;
         });
     };
 
-    const getSeatStatus = (seatId: string, seat: Seat) => {
-        if (!seat.available) return 'unavailable';
-        const owner = Object.entries(selectedSeats).find(([_, id]) => id === seatId)?.[0];
+    const getSlotStatus = (slotId: string, slot: Slot) => {
+        if (!slot.available) return 'unavailable';
+        const owner = Object.entries(selectedSlots).find(([_, id]) => id === slotId)?.[0];
         if (owner) {
-            const passengerIndex = passengers.findIndex(p => p.id === owner);
-            return passengerIndex === activePassenger ? 'selected-active' : 'selected-other';
+            const applicantIndex = applicants.findIndex(a => a.id === owner);
+            return applicantIndex === activeApplicant ? 'selected-active' : 'selected-other';
         }
         return 'available';
     };
 
-    const getSeatColor = (status: string) => {
+    const getSlotColor = (status: string) => {
         if (isDark) {
             return {
                 'available': '#334155',
@@ -98,27 +102,27 @@ export default function SeatSelection() {
         }[status] || '#E2E8F0';
     };
 
-    const calculateTotalPrice = () => {
+    const calculateTotalFee = () => {
         let total = 0;
-        Object.values(selectedSeats).forEach(seatId => {
-            data?.cabins.forEach(cabin => {
-                cabin.rows.forEach(row => {
-                    const seat = row.seats.find(s => s.id === seatId);
-                    if (seat?.price) total += parseFloat(seat.price);
+        Object.values(selectedSlots).forEach(slotId => {
+            data?.centers.forEach(center => {
+                center.timeBlocks.forEach(block => {
+                    const slot = block.slots.find(s => s.id === slotId);
+                    if (slot?.fee) total += parseFloat(slot.fee);
                 });
             });
         });
         return total;
     };
 
-    const getSelectedSeatInfo = (passengerId: string) => {
-        const seatId = selectedSeats[passengerId];
-        if (!seatId || !data) return null;
+    const getSelectedSlotInfo = (applicantId: string) => {
+        const slotId = selectedSlots[applicantId];
+        if (!slotId || !data) return null;
 
-        for (const cabin of data.cabins) {
-            for (const row of cabin.rows) {
-                const seat = row.seats.find(s => s.id === seatId);
-                if (seat) return { seat, row: row.rowNumber };
+        for (const center of data.centers) {
+            for (const block of center.timeBlocks) {
+                const slot = block.slots.find(s => s.id === slotId);
+                if (slot) return { slot, block: block.blockLabel };
             }
         }
         return null;
@@ -152,19 +156,19 @@ export default function SeatSelection() {
                             alignItems: 'center',
                             gap: '8px'
                         }}>
-                            <span>💺</span>
-                            <span>Select Seats</span>
+                            <span>🗓️</span>
+                            <span>Select Appointment Slots</span>
                         </h2>
                         <p style={{
                             margin: '4px 0 0 0',
                             fontSize: '12px',
                             color: isDark ? '#94A3B8' : '#64748B'
                         }}>
-                            {data.message || 'Choose seats for all passengers'}
+                            {data.message || 'Choose appointment slots for all applicants'}
                         </p>
                     </div>
 
-                    {Object.keys(selectedSeats).length > 0 && (
+                    {Object.keys(selectedSlots).length > 0 && (
                         <div style={{
                             background: 'var(--primary)',
                             color: 'white',
@@ -174,7 +178,7 @@ export default function SeatSelection() {
                         }}>
                             <div style={{ fontSize: '10px', opacity: 0.9 }}>Total</div>
                             <div style={{ fontSize: '18px', fontWeight: 700 }}>
-                                ${calculateTotalPrice().toFixed(2)}
+                                ${calculateTotalFee().toFixed(2)}
                             </div>
                         </div>
                     )}
@@ -182,23 +186,23 @@ export default function SeatSelection() {
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: '16px' }}>
-                {/* Seat Map */}
+                {/* Slot Map */}
                 <div className="card" style={{ minHeight: '400px' }}>
-                    {/* Front Indicator */}
+                    {/* Facility Indicator */}
                     <div style={{
                         textAlign: 'center',
                         marginBottom: '20px',
                         paddingBottom: '12px',
                         borderBottom: `2px dashed ${isDark ? '#334155' : '#E2E8F0'}`
                     }}>
-                        <div style={{ fontSize: '24px', marginBottom: '6px' }}>✈️</div>
+                        <div style={{ fontSize: '24px', marginBottom: '6px' }}>🏢</div>
                         <div style={{ fontSize: '12px', fontWeight: 600, color: '#3B9FFF' }}>
-                            FRONT
+                            VISA APPLICATION CENTER
                         </div>
                     </div>
 
-                    {data.cabins.map((cabin, cabinIndex) => (
-                        <div key={cabinIndex} style={{ marginBottom: '20px' }}>
+                    {data.centers.map((center, centerIndex) => (
+                        <div key={centerIndex} style={{ marginBottom: '20px' }}>
                             <div style={{
                                 background: 'var(--primary)',
                                 color: 'white',
@@ -209,25 +213,25 @@ export default function SeatSelection() {
                                 fontWeight: 600,
                                 textTransform: 'uppercase'
                             }}>
-                                {cabin.cabinClass.replace('_', ' ')}
+                                {center.facilityType.replace('_', ' ')}
                             </div>
 
                             <div style={{ display: 'grid', gap: '6px' }}>
-                                {cabin.rows.map((row) => (
-                                    <div key={row.rowNumber} style={{
+                                {center.timeBlocks.map((block) => (
+                                    <div key={block.blockLabel} style={{
                                         display: 'grid',
                                         gridTemplateColumns: 'auto 1fr auto',
                                         gap: '12px',
                                         alignItems: 'center'
                                     }}>
                                         <div style={{
-                                            width: '32px',
+                                            width: '48px',
                                             textAlign: 'center',
                                             fontSize: '12px',
                                             fontWeight: 600,
                                             color: isDark ? '#94A3B8' : '#64748B'
                                         }}>
-                                            {row.rowNumber}
+                                            {block.blockLabel}
                                         </div>
 
                                         <div style={{
@@ -236,33 +240,33 @@ export default function SeatSelection() {
                                             justifyContent: 'center',
                                             flexWrap: 'wrap'
                                         }}>
-                                            {row.seats.map((seat) => {
-                                                const status = getSeatStatus(seat.id, seat);
-                                                const isHovered = hoveredSeat === seat.id;
+                                            {block.slots.map((slot) => {
+                                                const status = getSlotStatus(slot.id, slot);
+                                                const isHovered = hoveredSlot === slot.id;
 
                                                 return (
                                                     <div
-                                                        key={seat.id}
-                                                        onClick={() => handleSeatClick(seat.id, seat)}
-                                                        onMouseEnter={() => setHoveredSeat(seat.id)}
-                                                        onMouseLeave={() => setHoveredSeat(null)}
+                                                        key={slot.id}
+                                                        onClick={() => handleSlotClick(slot.id, slot)}
+                                                        onMouseEnter={() => setHoveredSlot(slot.id)}
+                                                        onMouseLeave={() => setHoveredSlot(null)}
                                                         style={{
                                                             width: '40px',
                                                             height: '40px',
-                                                            background: getSeatColor(status),
+                                                            background: getSlotColor(status),
                                                             borderRadius: '6px',
                                                             display: 'flex',
                                                             alignItems: 'center',
                                                             justifyContent: 'center',
-                                                            cursor: seat.available ? 'pointer' : 'not-allowed',
+                                                            cursor: slot.available ? 'pointer' : 'not-allowed',
                                                             transition: 'all 0.2s ease',
-                                                            transform: isHovered && seat.available ? 'scale(1.1)' : 'scale(1)',
+                                                            transform: isHovered && slot.available ? 'scale(1.1)' : 'scale(1)',
                                                             border: status === 'selected-active' ? '2px solid #fff' : 'none',
                                                             position: 'relative',
-                                                            opacity: seat.available ? 1 : 0.4
+                                                            opacity: slot.available ? 1 : 0.4
                                                         }}
                                                     >
-                                                        <span style={{ fontSize: '16px' }}>💺</span>
+                                                        <span style={{ fontSize: '16px' }}>🗓️</span>
                                                         <div style={{
                                                             position: 'absolute',
                                                             bottom: '2px',
@@ -270,9 +274,9 @@ export default function SeatSelection() {
                                                             fontWeight: 600,
                                                             color: status.includes('selected') ? 'white' : isDark ? '#94A3B8' : '#64748B'
                                                         }}>
-                                                            {seat.column}
+                                                            {slot.label}
                                                         </div>
-                                                        {seat.price && parseFloat(seat.price) > 0 && isHovered && (
+                                                        {slot.fee && parseFloat(slot.fee) > 0 && isHovered && (
                                                             <div style={{
                                                                 position: 'absolute',
                                                                 top: '-20px',
@@ -284,7 +288,7 @@ export default function SeatSelection() {
                                                                 fontWeight: 600,
                                                                 whiteSpace: 'nowrap'
                                                             }}>
-                                                                ${seat.price}
+                                                                ${slot.fee}
                                                             </div>
                                                         )}
                                                     </div>
@@ -293,13 +297,13 @@ export default function SeatSelection() {
                                         </div>
 
                                         <div style={{
-                                            width: '32px',
+                                            width: '48px',
                                             textAlign: 'center',
                                             fontSize: '12px',
                                             fontWeight: 600,
                                             color: isDark ? '#94A3B8' : '#64748B'
                                         }}>
-                                            {row.rowNumber}
+                                            {block.blockLabel}
                                         </div>
                                     </div>
                                 ))}
@@ -320,7 +324,7 @@ export default function SeatSelection() {
                     }}>
                         {[
                             { label: 'Available', color: isDark ? '#334155' : '#E2E8F0' },
-                            { label: 'Your Seat', color: '#3B9FFF' },
+                            { label: 'Your Slot', color: '#3B9FFF' },
                             { label: 'Other', color: '#22C55E' },
                             { label: 'Taken', color: isDark ? '#1E293B' : '#CBD5E1' }
                         ].map(item => (
@@ -345,25 +349,25 @@ export default function SeatSelection() {
 
                 {/* Sidebar */}
                 <div style={{ display: 'grid', gap: '12px', alignContent: 'start' }}>
-                    {/* Passengers */}
+                    {/* Applicants */}
                     <div className="card">
                         <h3 style={{
                             margin: '0 0 12px 0',
                             fontSize: '14px',
                             fontWeight: 600
                         }}>
-                            Passengers
+                            Applicants
                         </h3>
 
                         <div style={{ display: 'grid', gap: '8px' }}>
-                            {passengers.map((passenger, index) => {
-                                const seatInfo = getSelectedSeatInfo(passenger.id);
-                                const isActive = activePassenger === index;
+                            {applicants.map((applicant, index) => {
+                                const slotInfo = getSelectedSlotInfo(applicant.id);
+                                const isActive = activeApplicant === index;
 
                                 return (
                                     <div
-                                        key={passenger.id}
-                                        onClick={() => setActivePassenger(index)}
+                                        key={applicant.id}
+                                        onClick={() => setActiveApplicant(index)}
                                         className={isActive ? 'nitro-gradient' : ''}
                                         style={{
                                             padding: '12px',
@@ -386,27 +390,27 @@ export default function SeatSelection() {
                                                     color: isActive ? 'white' : (isDark ? '#F8FAFC' : '#020617'),
                                                     marginBottom: '2px'
                                                 }}>
-                                                    {passenger.name}
+                                                    {applicant.name}
                                                 </div>
-                                                {seatInfo ? (
+                                                {slotInfo ? (
                                                     <div style={{
                                                         fontSize: '11px',
                                                         color: isActive ? 'rgba(255,255,255,0.9)' : (isDark ? '#94A3B8' : '#64748B')
                                                     }}>
-                                                        {seatInfo.row}{seatInfo.seat.column}
-                                                        {seatInfo.seat.price && ` • $${seatInfo.seat.price}`}
+                                                        {slotInfo.block} {slotInfo.slot.label}
+                                                        {slotInfo.slot.fee && ` • $${slotInfo.slot.fee}`}
                                                     </div>
                                                 ) : (
                                                     <div style={{
                                                         fontSize: '11px',
                                                         color: isActive ? 'rgba(255,255,255,0.8)' : (isDark ? '#64748B' : '#94A3B8')
                                                     }}>
-                                                        No seat
+                                                        No slot
                                                     </div>
                                                 )}
                                             </div>
 
-                                            {seatInfo && (
+                                            {slotInfo && (
                                                 <div style={{
                                                     width: '24px',
                                                     height: '24px',
@@ -446,7 +450,7 @@ export default function SeatSelection() {
                             }}>
                                 <span style={{ color: isDark ? '#94A3B8' : '#64748B' }}>Selected:</span>
                                 <span style={{ fontWeight: 600 }}>
-                                    {Object.keys(selectedSeats).length} / {passengers.length}
+                                    {Object.keys(selectedSlots).length} / {applicants.length}
                                 </span>
                             </div>
 
@@ -459,23 +463,23 @@ export default function SeatSelection() {
                             }}>
                                 <span style={{ color: isDark ? '#94A3B8' : '#64748B' }}>Total:</span>
                                 <span style={{ color: 'var(--primary)', fontWeight: 700, fontSize: '16px' }}>
-                                    ${calculateTotalPrice().toFixed(2)}
+                                    ${calculateTotalFee().toFixed(2)}
                                 </span>
                             </div>
                         </div>
 
                         <button
-                            disabled={Object.keys(selectedSeats).length !== passengers.length}
-                            className={Object.keys(selectedSeats).length === passengers.length ? 'btn-primary' : 'btn-secondary'}
+                            disabled={Object.keys(selectedSlots).length !== applicants.length}
+                            className={Object.keys(selectedSlots).length === applicants.length ? 'btn-primary' : 'btn-secondary'}
                             style={{
                                 width: '100%',
-                                opacity: Object.keys(selectedSeats).length === passengers.length ? 1 : 0.5,
-                                cursor: Object.keys(selectedSeats).length === passengers.length ? 'pointer' : 'not-allowed'
+                                opacity: Object.keys(selectedSlots).length === applicants.length ? 1 : 0.5,
+                                cursor: Object.keys(selectedSlots).length === applicants.length ? 'pointer' : 'not-allowed'
                             }}
                         >
-                            {Object.keys(selectedSeats).length === passengers.length
+                            {Object.keys(selectedSlots).length === applicants.length
                                 ? 'Confirm Selection'
-                                : `Select ${passengers.length - Object.keys(selectedSeats).length} More`
+                                : `Select ${applicants.length - Object.keys(selectedSlots).length} More`
                             }
                         </button>
                     </div>

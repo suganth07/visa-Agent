@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "My awesome MCP server",
+  "description": "Visa Agent MCP server (migrated from the NitroStack Flight Booking OAuth template)",
   "scripts": {
     "dev": "nitrostack-cli dev",
     "build": "nitrostack-cli build",
@@ -17,7 +17,6 @@
     "@nitrostack/core": "^1",
     "zod": "^3.22.4",
     "dotenv": "^16.3.1",
-    "@duffel/api": "^4.21.0",
     "axios": "^1.7.9",
     "date-fns": "^4.1.0",
     "@modelcontextprotocol/ext-apps": ">=0.1.0"

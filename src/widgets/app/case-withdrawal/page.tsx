@@ -3,23 +3,29 @@
 import { useWidgetSDK, useTheme } from '@nitrostack/widgets';
 
 /**
- * Order Cancellation Widget - Cancellation confirmation with refund info
+ * Case Withdrawal Widget - Withdrawal confirmation with fee refund info
+ *
+ * TODO(visa-agent): this widget is a terminology migration of the
+ * NitroStack Flight Booking OAuth template. Real Visa Agent widgets must
+ * follow docs/WIDGETS.md and align case withdrawal with the Visa Case
+ * Module's transition policy (see docs/ARCHITECTURE.md §14, "Withdrawn"
+ * exceptional case-lifecycle path).
  */
 
-interface CancellationData {
-    orderId: string;
-    cancellationId: string;
+interface WithdrawalData {
+    caseId: string;
+    withdrawalId: string;
     status: string;
-    refundAmount?: string;
-    refundCurrency?: string;
+    feeRefundAmount?: string;
+    feeRefundCurrency?: string;
     confirmedAt: string;
     message: string;
 }
 
-export default function OrderCancellation() {
+export default function CaseWithdrawal() {
     const { getToolOutput } = useWidgetSDK();
     const theme = useTheme();
-    const data = getToolOutput<CancellationData>();
+    const data = getToolOutput<WithdrawalData>();
 
     const isDark = theme === 'dark';
 
@@ -37,7 +43,7 @@ export default function OrderCancellation() {
         return <div style={{ padding: '24px', textAlign: 'center' }}>Loading...</div>;
     }
 
-    const hasRefund = data.refundAmount && parseFloat(data.refundAmount) > 0;
+    const hasRefund = data.feeRefundAmount && parseFloat(data.feeRefundAmount) > 0;
 
     return (
         <div className={isDark ? 'dark' : ''} style={{
@@ -73,14 +79,14 @@ export default function OrderCancellation() {
 
                 {/* Title */}
                 <h2 style={{ margin: '0 0 12px 0', fontSize: '24px', fontWeight: 700, textAlign: 'center' }}>
-                    Booking Cancelled
+                    Case Withdrawn
                 </h2>
 
                 <p style={{ margin: '0 0 24px 0', fontSize: '14px', color: isDark ? '#94A3B8' : '#64748B', lineHeight: '1.6', textAlign: 'center' }}>
                     {data.message}
                 </p>
 
-                {/* Cancellation Details */}
+                {/* Withdrawal Details */}
                 <div style={{
                     background: isDark ? '#0F172A' : '#F8FAFC',
                     borderRadius: '12px',
@@ -89,30 +95,30 @@ export default function OrderCancellation() {
                     border: `1px solid ${isDark ? '#334155' : '#E2E8F0'}`
                 }}>
                     <div style={{ display: 'grid', gap: '16px' }}>
-                        {/* Order ID */}
+                        {/* Case ID */}
                         <div>
                             <div style={{ fontSize: '11px', color: isDark ? '#94A3B8' : '#64748B', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                Order ID
+                                Case ID
                             </div>
                             <div style={{ fontSize: '14px', fontWeight: 600, fontFamily: 'monospace', padding: '10px', background: isDark ? '#020617' : 'white', borderRadius: '6px' }}>
-                                {data.orderId}
+                                {data.caseId}
                             </div>
                         </div>
 
-                        {/* Cancellation ID */}
+                        {/* Withdrawal ID */}
                         <div>
                             <div style={{ fontSize: '11px', color: isDark ? '#94A3B8' : '#64748B', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                Cancellation Reference
+                                Withdrawal Reference
                             </div>
                             <div style={{ fontSize: '14px', fontWeight: 600, fontFamily: 'monospace', padding: '10px', background: isDark ? '#020617' : 'white', borderRadius: '6px' }}>
-                                {data.cancellationId}
+                                {data.withdrawalId}
                             </div>
                         </div>
 
-                        {/* Cancelled On */}
+                        {/* Withdrawn On */}
                         <div>
                             <div style={{ fontSize: '11px', color: isDark ? '#94A3B8' : '#64748B', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                Cancelled On
+                                Withdrawn On
                             </div>
                             <div style={{ fontSize: '13px', fontWeight: 600, padding: '10px', background: isDark ? '#020617' : 'white', borderRadius: '6px' }}>
                                 {formatDateTime(data.confirmedAt)}
@@ -135,12 +141,12 @@ export default function OrderCancellation() {
                                             Refund Amount
                                         </div>
                                         <div style={{ fontSize: '22px', fontWeight: 700, color: '#78350F' }}>
-                                            {data.refundCurrency} {parseFloat(data.refundAmount!).toFixed(2)}
+                                            {data.feeRefundCurrency} {parseFloat(data.feeRefundAmount!).toFixed(2)}
                                         </div>
                                     </div>
                                 </div>
                                 <div style={{ fontSize: '11px', color: '#92400E', lineHeight: '1.5' }}>
-                                    Refund will be processed to your original payment method within 5-10 business days.
+                                    Refund will be processed to your original fee payment method within 5-10 business days.
                                 </div>
                             </div>
                         ) : (
@@ -154,7 +160,7 @@ export default function OrderCancellation() {
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                     <div style={{ fontSize: '20px' }}>ℹ️</div>
                                     <div style={{ fontSize: '12px', color: '#991B1B', lineHeight: '1.5' }}>
-                                        <strong>No Refund Available:</strong> This booking was non-refundable or outside the cancellation window.
+                                        <strong>No Refund Available:</strong> This case fee was non-refundable or outside the withdrawal window.
                                     </div>
                                 </div>
                             </div>
@@ -172,7 +178,7 @@ export default function OrderCancellation() {
                 {/* Action Buttons */}
                 <div style={{ display: 'grid', gap: '10px' }}>
                     <button className="btn-primary" style={{ width: '100%' }}>
-                        🔍 Search New Flights
+                        🔍 Search New Pathways
                     </button>
                     <button className="btn-secondary" style={{ width: '100%' }}>
                         📧 Email Confirmation
@@ -195,7 +201,7 @@ export default function OrderCancellation() {
                         <span>Need Help?</span>
                     </div>
                     <div style={{ fontSize: '11px', color: isDark ? '#94A3B8' : '#64748B', lineHeight: '1.5', marginBottom: '10px' }}>
-                        Questions about this cancellation? Contact our support team 24/7.
+                        Questions about this withdrawal? Contact our support team 24/7.
                     </div>
                     <button className="btn-primary" style={{ padding: '8px 16px', fontSize: '12px' }}>
                         Contact Support

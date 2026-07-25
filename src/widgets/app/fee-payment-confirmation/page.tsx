@@ -3,22 +3,28 @@
 import { useWidgetSDK, useTheme } from '@nitrostack/widgets';
 
 /**
- * Payment Confirmation Widget - Success state with booking details
+ * Fee Payment Confirmation Widget - Success state with case details
+ *
+ * TODO(visa-agent): this widget is a terminology migration of the
+ * NitroStack Flight Booking OAuth template. Fee/payment capabilities are
+ * out of scope for the current Visa Agent hackathon build per
+ * docs/MODULES.md §8 (Payments is listed as a deferred future module) —
+ * this widget is a relabeled placeholder only, not a real payment flow.
  */
 
-interface PaymentData {
-    orderId: string;
+interface FeePaymentData {
+    caseId: string;
     status: string;
-    totalAmount: string;
-    totalCurrency: string;
-    bookingReference?: string;
+    feeAmount: string;
+    feeCurrency: string;
+    referenceNumber?: string;
     message?: string;
 }
 
-export default function PaymentConfirmation() {
+export default function FeePaymentConfirmation() {
     const { getToolOutput } = useWidgetSDK();
     const theme = useTheme();
-    const data = getToolOutput<PaymentData>();
+    const data = getToolOutput<FeePaymentData>();
 
     const isDark = theme === 'dark';
 
@@ -26,7 +32,7 @@ export default function PaymentConfirmation() {
         return <div style={{ padding: '24px', textAlign: 'center' }}>Loading...</div>;
     }
 
-    const isConfirmed = data.status === 'confirmed';
+    const isConfirmed = data.status === 'submitted';
 
     return (
         <div className={isDark ? 'dark' : ''} style={{
@@ -58,14 +64,14 @@ export default function PaymentConfirmation() {
 
                 {/* Title */}
                 <h2 style={{ margin: '0 0 12px 0', fontSize: '24px', fontWeight: 700 }}>
-                    {isConfirmed ? 'Payment Successful!' : 'Complete Payment'}
+                    {isConfirmed ? 'Fee Payment Successful!' : 'Complete Fee Payment'}
                 </h2>
 
                 <p style={{ margin: '0 0 24px 0', fontSize: '14px', color: isDark ? '#94A3B8' : '#64748B', lineHeight: '1.6' }}>
-                    {data.message || (isConfirmed ? 'Your booking has been confirmed.' : 'Review and confirm your payment.')}
+                    {data.message || (isConfirmed ? 'Your case has been submitted.' : 'Review and confirm your fee payment.')}
                 </p>
 
-                {/* Booking Details */}
+                {/* Case Details */}
                 <div style={{
                     background: isDark ? '#0F172A' : '#F8FAFC',
                     borderRadius: '12px',
@@ -73,13 +79,13 @@ export default function PaymentConfirmation() {
                     marginBottom: '24px',
                     border: `1px solid ${isDark ? '#334155' : '#E2E8F0'}`
                 }}>
-                    {data.bookingReference && (
+                    {data.referenceNumber && (
                         <div style={{ marginBottom: '16px' }}>
                             <div style={{ fontSize: '11px', color: isDark ? '#94A3B8' : '#64748B', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                Booking Reference
+                                Case Reference
                             </div>
                             <div style={{ fontSize: '20px', fontWeight: 700, color: '#22C55E', letterSpacing: '1px', fontFamily: 'monospace' }}>
-                                {data.bookingReference}
+                                {data.referenceNumber}
                             </div>
                         </div>
                     )}
@@ -87,12 +93,12 @@ export default function PaymentConfirmation() {
                     <div style={{
                         display: 'grid',
                         gap: '12px',
-                        paddingTop: data.bookingReference ? '16px' : '0',
-                        borderTop: data.bookingReference ? `1px solid ${isDark ? '#334155' : '#E2E8F0'}` : 'none'
+                        paddingTop: data.referenceNumber ? '16px' : '0',
+                        borderTop: data.referenceNumber ? `1px solid ${isDark ? '#334155' : '#E2E8F0'}` : 'none'
                     }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
-                            <span style={{ color: isDark ? '#94A3B8' : '#64748B' }}>Order ID:</span>
-                            <span style={{ fontWeight: 600, fontFamily: 'monospace' }}>{data.orderId}</span>
+                            <span style={{ color: isDark ? '#94A3B8' : '#64748B' }}>Case ID:</span>
+                            <span style={{ fontWeight: 600, fontFamily: 'monospace' }}>{data.caseId}</span>
                         </div>
 
                         <div style={{
@@ -102,10 +108,10 @@ export default function PaymentConfirmation() {
                             borderTop: `1px solid ${isDark ? '#334155' : '#E2E8F0'}`
                         }}>
                             <span style={{ fontSize: '14px', fontWeight: 600 }}>
-                                {isConfirmed ? 'Amount Paid:' : 'Total Amount:'}
+                                {isConfirmed ? 'Fee Paid:' : 'Fee Due:'}
                             </span>
                             <span style={{ color: 'var(--primary)', fontSize: '20px', fontWeight: 700 }}>
-                                {data.totalCurrency} {parseFloat(data.totalAmount).toFixed(2)}
+                                {data.feeCurrency} {parseFloat(data.feeAmount).toFixed(2)}
                             </span>
                         </div>
                     </div>
@@ -124,10 +130,10 @@ export default function PaymentConfirmation() {
                 ) : (
                     <div>
                         <button className="btn-primary" style={{ width: '100%', marginBottom: '12px' }}>
-                            🔒 Confirm & Pay {data.totalCurrency} {parseFloat(data.totalAmount).toFixed(2)}
+                            🔒 Confirm & Pay {data.feeCurrency} {parseFloat(data.feeAmount).toFixed(2)}
                         </button>
                         <div style={{ fontSize: '11px', color: isDark ? '#94A3B8' : '#64748B', lineHeight: '1.5' }}>
-                            🔒 Your payment is secure and encrypted
+                            🔒 Your fee payment is secure and encrypted
                         </div>
                     </div>
                 )}
