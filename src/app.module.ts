@@ -1,5 +1,7 @@
 import { McpApp, Module, ConfigModule, OAuthModule } from '@nitrostack/core';
 import { VisaModule } from './modules/visa/visa.module.js';
+import { CaseModule } from './modules/case/case.module.js';
+import { OnboardingModule } from './modules/onboarding/onboarding.module.js';
 import { SystemHealthCheck } from './health/system.health.js';
 
 /**
@@ -14,13 +16,23 @@ import { SystemHealthCheck } from './health/system.health.js';
  * - Validates tokens with audience binding (RFC 8707)
  *
  * Visa Agent:
- * - Migrated from the NitroStack Flight Booking OAuth template
- * - Visa pathway search and case intake capabilities
- * - Widgets for pathway results and case details
- * - TODO(visa-agent): this module composition is a terminology migration
- *   only. See docs/ARCHITECTURE.md and docs/MODULES.md for the target
- *   Visa Agent module set (Case, Client, Operations, Documents, Policy
- *   Knowledge, Broker, Task, Approval, Notification, Audit).
+ * - VisaModule: migrated from the NitroStack Flight Booking OAuth
+ *   template (pathway search, legacy case/appointment/withdrawal tools).
+ *   TODO(visa-agent): this is a terminology migration only, not a real
+ *   implementation of any docs/MODULES.md module.
+ * - CaseModule: first real vertical slice of the Visa Case Module
+ *   (docs/MODULES.md §3.1) — case_start and case_get, in-memory only.
+ *   TODO(visa-case): see case.service.ts and case.tools.ts for the list of
+ *   still-missing capabilities (persistence, audit, events, approvals).
+ * - OnboardingModule: second vertical slice — deterministic (no LLM),
+ *   regex/heuristic extraction of nationality, destinationCountry, and
+ *   visaType from a free-form message, then case_start via VisaCaseService
+ *   (injected from CaseModule, not called over HTTP or tool-to-tool).
+ *   TODO(onboarding): see onboarding.module.ts for scope and future
+ *   LLM-integration TODOs.
+ * See docs/ARCHITECTURE.md and docs/MODULES.md for the full target Visa
+ * Agent module set (Case, Client, Operations, Documents, Policy Knowledge,
+ * Broker, Task, Approval, Notification, Audit).
  */
 @McpApp({
   module: AppModule,
@@ -93,7 +105,9 @@ import { SystemHealthCheck } from './health/system.health.js';
       },
     }),
 
-    VisaModule
+    VisaModule,
+    CaseModule,
+    OnboardingModule
   ],
   providers: [
     // Health Checks
