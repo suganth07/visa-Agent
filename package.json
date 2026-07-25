@@ -14,7 +14,7 @@
     "widget": "npm --prefix src/widgets"
   },
   "dependencies": {
-    "@nitrostack/core": "^1",
+    "@nitrostack/core": "^1.0.14",
     "zod": "^3.22.4",
     "dotenv": "^16.3.1",
     "axios": "^1.7.9",
@@ -22,7 +22,7 @@
     "@modelcontextprotocol/ext-apps": ">=0.1.0"
   },
   "devDependencies": {
-    "@nitrostack/cli": "^1",
+    "@nitrostack/cli": "^1.0.15",
     "@types/node": "^22.10.0",
     "typescript": "^5.3.3"
   },
