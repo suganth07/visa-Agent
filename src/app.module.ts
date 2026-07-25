@@ -2,6 +2,7 @@ import { McpApp, Module, ConfigModule, OAuthModule } from '@nitrostack/core';
 import { CaseModule } from './modules/case/case.module.js';
 import { OnboardingModule } from './modules/onboarding/onboarding.module.js';
 import { RequirementModule } from './modules/requirement/requirement.module.js';
+import { DocumentModule } from './modules/document/document.module.js';
 import { SystemHealthCheck } from './health/system.health.js';
 
 /**
@@ -34,6 +35,13 @@ import { SystemHealthCheck } from './health/system.health.js';
  *   in-memory for `case://requirements/{caseId}` to read back.
  *   TODO(requirement): see requirement.module.ts for scope and the future
  *   Policy Knowledge Module TODOs.
+ * - DocumentModule: fourth vertical slice — in-memory document upload, a
+ *   deterministic OCR stub (no vendor, no LLM), and deterministic
+ *   validation of extracted fields against a case. Retrieves the case via
+ *   VisaCaseService (injected from CaseModule), the same DI pattern the
+ *   Onboarding and Requirement modules use.
+ *   TODO(document): see document.module.ts for scope and the future
+ *   Documents Module TODOs.
  * See docs/ARCHITECTURE.md and docs/MODULES.md for the full target Visa
  * Agent module set (Case, Client, Operations, Documents, Policy Knowledge,
  * Broker, Task, Approval, Notification, Audit).
@@ -111,7 +119,8 @@ import { SystemHealthCheck } from './health/system.health.js';
 
     CaseModule,
     OnboardingModule,
-    RequirementModule
+    RequirementModule,
+    DocumentModule
   ],
   providers: [
     // Health Checks
