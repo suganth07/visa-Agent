@@ -16,6 +16,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { getWidgetSDK } from '@nitrostack/widgets';
 import { isHostReady } from '../../lib/mcp';
+import type { CaseGetOutput, ResolveRequirementsOutput } from '../../lib/types';
 import type { StepKey } from '../../components/ui';
 import {
   Alert,
@@ -39,6 +40,8 @@ interface FlowState {
   caseId?: string;
   documentId?: string;
   celebrateCase?: boolean;
+  caseRecord?: CaseGetOutput;
+  requirements?: ResolveRequirementsOutput;
 }
 
 /**
@@ -55,14 +58,51 @@ function seedFromToolOutput(output: unknown): FlowState | null {
   }
 
   // resolve_requirements -> the checklist
-  if (Array.isArray(o.checklist) && typeof o.caseId === 'string') {
-    return { screen: 'requirements', caseId: o.caseId };
+  if (
+    Array.isArray(o.checklist) &&
+    o.checklist.every((item) => typeof item === 'string') &&
+    typeof o.caseId === 'string' &&
+    typeof o.timeline === 'string' &&
+    Array.isArray(o.notes) &&
+    o.notes.every((note) => typeof note === 'string')
+  ) {
+    return {
+      screen: 'requirements',
+      caseId: o.caseId,
+      requirements: {
+        caseId: o.caseId,
+        checklist: o.checklist,
+        timeline: o.timeline,
+        notes: o.notes,
+      },
+    };
   }
 
   // onboarding_extract
   if (typeof o.outcome === 'string') {
     if (o.outcome === 'case_started' && typeof o.caseId === 'string') {
-      return { screen: 'case', caseId: o.caseId, celebrateCase: true };
+      const hasCompleteCase =
+        typeof o.status === 'string' &&
+        typeof o.createdAt === 'string' &&
+        o.extracted !== null &&
+        typeof o.extracted === 'object' &&
+        typeof (o.extracted as Record<string, unknown>).nationality === 'string' &&
+        typeof (o.extracted as Record<string, unknown>).destinationCountry === 'string' &&
+        typeof (o.extracted as Record<string, unknown>).visaType === 'string';
+
+      const caseRecord = hasCompleteCase
+        ? {
+            caseId: o.caseId,
+            nationality: (o.extracted as Record<string, string>).nationality,
+            destinationCountry: (o.extracted as Record<string, string>).destinationCountry,
+            visaType: (o.extracted as Record<string, string>).visaType,
+            status: o.status as CaseGetOutput['status'],
+            createdAt: o.createdAt as string,
+            nextStep: typeof o.nextStep === 'string' ? o.nextStep : 'Review your draft case.',
+          }
+        : undefined;
+
+      return { screen: 'case', caseId: o.caseId, celebrateCase: true, caseRecord };
     }
     return { screen: 'chat' };
   }
@@ -173,8 +213,9 @@ export default function MigrateEasePage() {
           <CaseSummary
             caseId={state.caseId}
             celebrate={state.celebrateCase}
+            initialRecord={state.caseRecord}
             onBack={() => go('chat')}
-            onContinue={() => go('requirements', { celebrateCase: false })}
+            onContinue={() => go('requirements', { celebrateCase: false, requirements: undefined })}
           />
         ) : (
           <MissingCase onRestart={() => go('chat')} />
@@ -184,6 +225,7 @@ export default function MigrateEasePage() {
         (state.caseId ? (
           <Checklist
             caseId={state.caseId}
+            initialData={state.requirements}
             onBack={() => go('case')}
             onContinue={() => go('upload')}
           />

@@ -13,6 +13,7 @@ export interface OnboardingCaseStartedResult {
     };
     caseId: string;
     status: string;
+    createdAt: string;
     nextStep: string;
 }
 
@@ -85,6 +86,7 @@ export class OnboardingService {
             extracted: { nationality, destinationCountry, visaType },
             caseId: record.caseId,
             status: record.status,
+            createdAt: record.createdAt,
             nextStep: record.nextStep
         };
     }

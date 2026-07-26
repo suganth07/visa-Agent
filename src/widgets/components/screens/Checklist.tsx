@@ -26,14 +26,17 @@ export function Checklist({
   onContinue,
   onBack,
   onResolved,
+  initialData,
 }: {
   caseId: string;
   onContinue: () => void;
   onBack: () => void;
   onResolved?: (data: ResolveRequirementsOutput) => void;
+  /** The resolve_requirements result that mounted this widget, if any. */
+  initialData?: ResolveRequirementsOutput;
 }) {
-  const [data, setData] = useState<ResolveRequirementsOutput | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<ResolveRequirementsOutput | null>(initialData ?? null);
+  const [loading, setLoading] = useState(!initialData);
   const [error, setError] = useState<string | null>(null);
   const [checked, setChecked] = useState<Record<string, boolean>>({});
 
@@ -52,8 +55,16 @@ export function Checklist({
   }, [caseId, onResolved]);
 
   useEffect(() => {
+    // `resolve_requirements` itself mounts this widget. Calling it again from
+    // this mount creates an unbounded host -> widget -> tool -> widget cycle.
+    // The tool result is already the complete checklist, so render it directly.
+    if (initialData) {
+      setData(initialData);
+      setLoading(false);
+      return;
+    }
     void load();
-  }, [load]);
+  }, [initialData, load]);
 
   // Defensive: a tool response missing an expected array must degrade to an
   // empty list, never crash the screen mid-render.

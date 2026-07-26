@@ -27,14 +27,17 @@ export function CaseSummary({
   onContinue,
   onBack,
   celebrate,
+  initialRecord,
 }: {
   caseId: string;
   onContinue: (record: CaseGetOutput) => void;
   onBack: () => void;
   celebrate?: boolean;
+  /** The result that mounted this widget, when it already has case details. */
+  initialRecord?: CaseGetOutput;
 }) {
-  const [record, setRecord] = useState<CaseGetOutput | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [record, setRecord] = useState<CaseGetOutput | null>(initialRecord ?? null);
+  const [loading, setLoading] = useState(!initialRecord);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -50,8 +53,17 @@ export function CaseSummary({
   }, [caseId]);
 
   useEffect(() => {
+    // A widget must not turn the tool result that mounted it into an implicit
+    // follow-up tool call. In particular, keeping the onboarding result here
+    // lets the host finish the original assistant turn before the user chooses
+    // a next action.
+    if (initialRecord) {
+      setRecord(initialRecord);
+      setLoading(false);
+      return;
+    }
     void load();
-  }, [load]);
+  }, [initialRecord, load]);
 
   return (
     <Card>

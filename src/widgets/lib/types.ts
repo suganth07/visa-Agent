@@ -44,6 +44,7 @@ export type OnboardingExtractOutput =
       extracted: ExtractedCaseFields;
       caseId: string;
       status: CaseStatus;
+      createdAt: string;
       nextStep: string;
     }
   | {

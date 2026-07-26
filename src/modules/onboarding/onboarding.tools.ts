@@ -40,6 +40,7 @@ export class OnboardingTools {
                 },
                 caseId: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
                 status: 'DRAFT',
+                createdAt: '2026-07-25T12:00:00.000Z',
                 nextStep: 'Complete onboarding.'
             }
         }
@@ -78,6 +79,7 @@ export class OnboardingTools {
             extracted: result.extracted,
             caseId: result.caseId,
             status: result.status,
+            createdAt: result.createdAt,
             nextStep: result.nextStep
         };
     }
