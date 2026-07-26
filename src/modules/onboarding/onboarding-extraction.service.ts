@@ -100,27 +100,36 @@ export class OnboardingExtractionService {
         };
     }
 
-    private extractNationality(message: string): string | null {
-        // "I am from India", "I'm from Germany", "originally from France"
-        const fromMatch = message.match(
-            /\b(?:i\s*(?:'m|am)\s+)?(?:originally\s+)?from\s+([a-z][a-z\s]*?)(?=[.,;!?]|\s+(?:and|but|who|moving|relocating|migrating|currently|now|to)\b|$)/i
-        );
-        if (fromMatch) {
-            const normalized = this.normalizeCountryPhrase(fromMatch[1]);
-            if (normalized) return normalized;
+    private extractNationality(message: string): string |null {
+
+    const lower = message.toLowerCase();
+
+    if (lower.includes("from")) {
+
+        for (const country of KNOWN_COUNTRIES){
+
+            if(lower.includes("from " + country.toLowerCase())){
+
+                return country;
+
+            }
+
         }
 
-        // "I am Indian", "I'm a German citizen", "as an Indian national"
-        const demonymMatch = message.match(
-            /\bi\s*(?:'m|am)\s+(?:an?\s+)?([a-z]+)\s*(?:citizen|national)?\b/i
-        );
-        if (demonymMatch) {
-            const demonym = demonymMatch[1].toLowerCase();
-            if (DEMONYM_TO_COUNTRY[demonym]) return DEMONYM_TO_COUNTRY[demonym];
-        }
-
-        return null;
     }
+
+    for(const [demonym,country] of Object.entries(DEMONYM_TO_COUNTRY)){
+
+        if(lower.includes(demonym)){
+
+            return country;
+
+        }
+
+    }
+
+    return null;
+}
 
     private extractDestinationCountry(message: string): string | null {
         // "moving to Germany", "relocating to France", "migrating to Canada",
