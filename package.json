@@ -14,7 +14,6 @@
     "widget": "npm --prefix src/widgets"
   },
   "dependencies": {
-    "@google/genai": "^2.13.0",
     "@modelcontextprotocol/ext-apps": ">=0.1.0",
     "@nitrostack/core": "^1.0.14",
     "axios": "^1.7.9",
