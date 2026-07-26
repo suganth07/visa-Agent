@@ -3,6 +3,8 @@ import { CaseModule } from './modules/case/case.module.js';
 import { OnboardingModule } from './modules/onboarding/onboarding.module.js';
 import { RequirementModule } from './modules/requirement/requirement.module.js';
 import { DocumentModule } from './modules/document/document.module.js';
+import { HousingModule } from './modules/housing/housing.module.js';
+import { BrokerRecommendationModule } from './modules/recommendation/recommendation.module.js';
 import { SystemHealthCheck } from './health/system.health.js';
 
 /**
@@ -42,6 +44,19 @@ import { SystemHealthCheck } from './health/system.health.js';
  *   Onboarding and Requirement modules use.
  *   TODO(document): see document.module.ts for scope and the future
  *   Documents Module TODOs.
+ * - HousingModule: fifth vertical slice, and the first module backed by
+ *   MongoDB Atlas rather than process memory — housing preference capture
+ *   and deterministic broker shortlisting (no LLM, no ranking, no
+ *   assignment). Retrieves the case via VisaCaseService (injected from
+ *   CaseModule), the same DI pattern the other slices use.
+ *   TODO(housing): see housing.module.ts for scope and the future Broker
+ *   Module TODOs.
+ * - BrokerRecommendationModule: sixth vertical slice — the AI ranking layer
+ *   over the Housing Module's deterministic shortlist, using Gemini 2.5
+ *   Flash. It orders a fixed candidate set and validates every returned
+ *   brokerId against it; it never filters, widens, selects, or assigns.
+ *   TODO(recommendation): see recommendation.module.ts for scope and the
+ *   Approval Module TODOs.
  * See docs/ARCHITECTURE.md and docs/MODULES.md for the full target Visa
  * Agent module set (Case, Client, Operations, Documents, Policy Knowledge,
  * Broker, Task, Approval, Notification, Audit).
@@ -120,7 +135,9 @@ import { SystemHealthCheck } from './health/system.health.js';
     CaseModule,
     OnboardingModule,
     RequirementModule,
-    DocumentModule
+    DocumentModule,
+    HousingModule,
+    BrokerRecommendationModule
   ],
   providers: [
     // Health Checks

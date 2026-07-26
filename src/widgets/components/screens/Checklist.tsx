@@ -55,8 +55,13 @@ export function Checklist({
     void load();
   }, [load]);
 
-  const total = data?.checklist.length ?? 0;
-  const done = data ? data.checklist.filter((item) => checked[item]).length : 0;
+  // Defensive: a tool response missing an expected array must degrade to an
+  // empty list, never crash the screen mid-render.
+  const checklist = Array.isArray(data?.checklist) ? data.checklist : [];
+  const notes = Array.isArray(data?.notes) ? data.notes : [];
+
+  const total = checklist.length;
+  const done = checklist.filter((item) => checked[item]).length;
   const pct = total === 0 ? 0 : Math.round((done / total) * 100);
 
   return (
@@ -123,8 +128,14 @@ export function Checklist({
             />
           </div>
 
+          {checklist.length === 0 && (
+            <Alert tone="warning" title="No checklist items came back">
+              The server returned no document requirements for this case.
+            </Alert>
+          )}
+
           <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 8 }}>
-            {data.checklist.map((item) => {
+            {checklist.map((item) => {
               const isChecked = !!checked[item];
               return (
                 <li key={item}>
@@ -163,14 +174,16 @@ export function Checklist({
           </ul>
 
           <div style={{ marginTop: 18, display: 'grid', gap: 12 }}>
-            <Alert tone="info" title="Estimated timeline">
-              {data.timeline}
-            </Alert>
+            {data.timeline && (
+              <Alert tone="info" title="Estimated timeline">
+                {data.timeline}
+              </Alert>
+            )}
 
-            {data.notes.length > 0 && (
+            {notes.length > 0 && (
               <Alert tone="warning" title="Before you rely on this">
                 <ul style={{ margin: '4px 0 0', paddingLeft: 18 }}>
-                  {data.notes.map((note) => (
+                  {notes.map((note) => (
                     <li key={note} style={{ marginBottom: 3 }}>
                       {note}
                     </li>

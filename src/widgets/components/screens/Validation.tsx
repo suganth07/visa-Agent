@@ -67,6 +67,12 @@ export function Validation({
   const isValid = result?.status === 'VALID';
   const fields = ocr?.extractedFields as Record<string, unknown> | undefined;
 
+  // Defensive, for the same reason as Checklist: never index into an array
+  // the response might not have sent.
+  const passedChecks = Array.isArray(result?.passedChecks) ? result.passedChecks : [];
+  const failedChecks = Array.isArray(result?.failedChecks) ? result.failedChecks : [];
+  const totalChecks = passedChecks.length + failedChecks.length;
+
   return (
     <Card>
       <ScreenHeader
@@ -166,17 +172,16 @@ export function Validation({
                 color: 'var(--me-text-muted)',
               }}
             >
-              {result.passedChecks.length} of{' '}
-              {result.passedChecks.length + result.failedChecks.length} checks passed ·{' '}
+              {passedChecks.length} of {totalChecks} checks passed ·{' '}
               {formatConfidence(result.confidence)} confidence
             </p>
           </div>
 
-          {result.failedChecks.length > 0 && (
+          {failedChecks.length > 0 && (
             <div style={{ marginBottom: 16 }}>
               <Alert tone="error" title="Needs your attention">
                 <ul style={{ margin: '4px 0 0', paddingLeft: 18 }}>
-                  {result.failedChecks.map((c) => (
+                  {failedChecks.map((c) => (
                     <li key={c} style={{ marginBottom: 3 }}>
                       {humanizeCheck(c)}
                     </li>
@@ -186,9 +191,9 @@ export function Validation({
             </div>
           )}
 
-          {result.passedChecks.length > 0 && (
+          {passedChecks.length > 0 && (
             <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 20 }}>
-              {result.passedChecks.map((c) => (
+              {passedChecks.map((c) => (
                 <Badge key={c} tone="success">
                   ✓ {humanizeCheck(c)}
                 </Badge>
