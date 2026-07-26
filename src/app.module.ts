@@ -6,6 +6,7 @@ import { DocumentModule } from './modules/document/document.module.js';
 import { HousingModule } from './modules/housing/housing.module.js';
 import { BrokerRecommendationModule } from './modules/recommendation/recommendation.module.js';
 import { SystemHealthCheck } from './health/system.health.js';
+import { OnboardingWorkflowGuard } from './services/onboarding-workflow.guard.js';
 
 /**
  * Root Application Module
@@ -142,6 +143,7 @@ import { SystemHealthCheck } from './health/system.health.js';
   providers: [
     // Health Checks
     SystemHealthCheck,
+    OnboardingWorkflowGuard,
   ]
 })
 export class AppModule { }

@@ -1,26 +1,14 @@
 import { PromptDecorator as Prompt, ExecutionContext, Injectable } from '@nitrostack/core';
 
 /**
- * OnboardingPrompts
- *
- * This prompt only returns an instruction template for whatever AI client
- * is orchestrating the conversation — it does not call any LLM itself, and
- * neither does anything else in this module. All field extraction is done
- * by the deterministic OnboardingExtractionService via the
- * `onboarding_extract` tool. The prompt's only job is to tell the AI client
- * to call that tool and how to react to its structured output.
- *
- * TODO(onboarding): if/when a real LLM-backed extraction path is added
- * (see onboarding-extraction.service.ts TODOs), this prompt should keep
- * instructing the AI client to rely on the tool's structured result rather
- * than extracting fields itself, per docs/PROMPTS.md ("never hallucinate",
- * "always use authorized resources/tools before summarizing state").
+ * Instruction template for the host agent. MCP tools return data; the host is
+ * responsible for emitting the final assistant reply after the last tool.
  */
 @Injectable()
 export class OnboardingPrompts {
     @Prompt({
         name: 'onboarding_assistant',
-        description: 'Guides a natural-language visa onboarding conversation: calls onboarding_extract with the user\'s raw message, reports the started case when complete, or asks only for the specific missing fields when incomplete.',
+        description: 'Enforces the deterministic onboarding workflow: extract once; if incomplete, ask for missing fields and stop; if started, resolve requirements once, give the final summary, and stop.',
         arguments: [
             {
                 name: 'userMessage',
@@ -30,25 +18,26 @@ export class OnboardingPrompts {
         ]
     })
     async onboardingAssistant(input: any, ctx: ExecutionContext) {
-        const systemPrompt = `You are helping a visa applicant through onboarding.
+        const systemPrompt = `You are helping a visa applicant through deterministic onboarding.
 
-⚠️ CRITICAL: Do not extract nationality, destination country, or visa type yourself, and do not guess them. Call the \`onboarding_extract\` tool with the user's message exactly as written, and rely only on its structured output.
-⚠️ This assistant does not give legal advice, guarantee eligibility, or guarantee an outcome. TODO(visa-agent): align with docs/PROMPTS.md safety rules before production use.
+CRITICAL: Do not extract nationality, destination country, or visa type yourself, and do not guess them. Use only structured tool results. Do not claim approval, eligibility, or legal advice.
 
-WORKFLOW:
-1. Call \`onboarding_extract\` with { message: <the user's raw message> }.
-2. If the result's \`outcome\` is "case_started":
-   - Tell the user their case ID, status, and next step exactly as returned.
-   - Do not imply approval, eligibility, or that anything beyond a DRAFT case exists.
-3. If the result's \`outcome\` is "missing_information":
-   - Look at \`missingFields\` and ask the user ONLY for those specific fields, in plain language.
-   - Do not ask about fields that were already extracted.
-   - Once the user replies, call \`onboarding_extract\` again with their new message (you may combine it with previously known context if the tool supports it; otherwise ask the user to restate everything in one message).
-4. Never call \`case_start\` or any other case tool directly from this flow — onboarding_extract is the only entry point here.
+WORKFLOW (STRICT):
+1. Call \`onboarding_extract\` exactly once with { message: <the user's raw message> }.
+2. If \`outcome\` is \`missing_information\`:
+   - Ask only for the fields named in \`missingFields\`.
+   - Do not call another tool.
+   - Stop the turn immediately after that reply.
+3. If \`outcome\` is \`case_started\`:
+   - Call \`resolve_requirements\` exactly once with { caseId: <the returned caseId> }.
+   - Reply with exactly: case ID, case status, checklist, and timeline.
+   - Do not call \`case_start\`, \`case_get\`, \`onboarding_extract\`, \`resolve_requirements\` again, or any other tool.
+   - Stop the turn immediately after the final reply.
+4. Never make a tool call after \`resolve_requirements\`.
 
 Current user message: ${input.userMessage}
 
-Respond to EXACTLY what the workflow above requires - nothing more.`;
+Respond to exactly what this workflow requires and nothing more.`;
 
         return {
             role: 'assistant',

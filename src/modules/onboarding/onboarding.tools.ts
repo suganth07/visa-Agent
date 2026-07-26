@@ -1,6 +1,7 @@
 import { ToolDecorator as Tool, Widget, ExecutionContext, z, UseGuards, Injectable } from '@nitrostack/core';
 import { OAuthGuard } from '../../guards/oauth.guard.js';
 import { OnboardingService } from './onboarding.service.js';
+import { OnboardingWorkflowGuard } from '../../services/onboarding-workflow.guard.js';
 
 /**
  * OnboardingTools
@@ -17,13 +18,16 @@ import { OnboardingService } from './onboarding.service.js';
  * creation triggered from here has the same gaps as `case_start` itself
  * (see TODOs in src/modules/case/case.service.ts).
  */
-@Injectable({ deps: [OnboardingService] })
+@Injectable({ deps: [OnboardingService, OnboardingWorkflowGuard] })
 export class OnboardingTools {
-    constructor(private onboardingService: OnboardingService) { }
+    constructor(
+        private onboardingService: OnboardingService,
+        private workflowGuard: OnboardingWorkflowGuard
+    ) { }
 
     @Tool({
         name: 'onboarding_extract',
-        description: 'Extracts nationality, destinationCountry, and visaType from a free-form onboarding message using deterministic regex/heuristics (no LLM). When all three fields are found, starts a visa case via VisaCaseService and returns the case ID, status, and next step. When any field is missing, returns the fields that were found and a structured list of what is still missing.',
+        description: 'First step of the deterministic onboarding workflow. Extracts nationality, destinationCountry, and visaType from a free-form message. If information is missing, ask only for the missing fields and stop. If a case is started, call resolve_requirements exactly once with its caseId, then provide the final response and stop. Do not call case_start, case_get, or any additional tool after resolve_requirements.',
         inputSchema: z.object({
             message: z.string().min(1).describe('Free-form user message describing their onboarding intent, e.g. "I am from India and moving to Germany for Masters"')
         }),
@@ -53,7 +57,29 @@ export class OnboardingTools {
             messageLength: input.message?.length
         });
 
-        const result = await this.onboardingService.processMessage(input.message);
+        const workflowKey = this.workflowGuard.onboardingKey(ctx, input.message);
+        const result = await this.workflowGuard.executeOnce(workflowKey, async () => {
+            const processed = await this.onboardingService.processMessage(input.message);
+
+            if (processed.outcome === 'missing_information') {
+                return {
+                    outcome: processed.outcome,
+                    extracted: processed.extracted,
+                    missingFields: processed.missingFields,
+                    message: `Missing required information: ${processed.missingFields.join(', ')}`
+                };
+            }
+
+            this.workflowGuard.linkCase(ctx, workflowKey, processed.caseId);
+            return {
+                outcome: processed.outcome,
+                extracted: processed.extracted,
+                caseId: processed.caseId,
+                status: processed.status,
+                createdAt: processed.createdAt,
+                nextStep: 'Resolve visa requirements.'
+            };
+        });
 
         if (result.outcome === 'missing_information') {
             ctx.logger.info('Onboarding message missing required fields', {
@@ -61,12 +87,7 @@ export class OnboardingTools {
                 missingFields: result.missingFields
             });
 
-            return {
-                outcome: result.outcome,
-                extracted: result.extracted,
-                missingFields: result.missingFields,
-                message: `Missing required information: ${result.missingFields.join(', ')}`
-            };
+            return result;
         }
 
         ctx.logger.info('Onboarding extraction complete, case started', {

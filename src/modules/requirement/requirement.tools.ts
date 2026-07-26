@@ -2,6 +2,7 @@ import { ToolDecorator as Tool, Widget, ExecutionContext, z, UseGuards, Injectab
 import { OAuthGuard } from '../../guards/oauth.guard.js';
 import { RequirementService } from './requirement.service.js';
 import { VisaCaseService } from '../case/case.service.js';
+import { OnboardingWorkflowGuard } from '../../services/onboarding-workflow.guard.js';
 
 /**
  * RequirementTools
@@ -18,16 +19,17 @@ import { VisaCaseService } from '../case/case.service.js';
  * tenant check is enforced yet.
  * TODO(requirement): no audit logging or event emission yet.
  */
-@Injectable({ deps: [RequirementService, VisaCaseService] })
+@Injectable({ deps: [RequirementService, VisaCaseService, OnboardingWorkflowGuard] })
 export class RequirementTools {
     constructor(
         private requirementService: RequirementService,
-        private visaCaseService: VisaCaseService
+        private visaCaseService: VisaCaseService,
+        private workflowGuard: OnboardingWorkflowGuard
     ) { }
 
     @Tool({
         name: 'resolve_requirements',
-        description: 'Retrieves a visa case, resolves its visa requirements from a small in-memory rules dataset (nationality + destinationCountry + visaType), caches the result for that case, and returns a checklist, timeline, and notes. No MongoDB, Qdrant, Firecrawl, LLM, or web scraping is used.',
+        description: 'Final tool step of the deterministic onboarding workflow. Resolves a case into a checklist and timeline. After this result, reply with caseId, status, checklist, and timeline, then stop. Do not call case_get, onboarding_extract, resolve_requirements again, or any additional tool for this user message.',
         inputSchema: z.object({
             caseId: z.string().describe('The case ID returned by case_start or onboarding_extract')
         }),
@@ -58,27 +60,30 @@ export class RequirementTools {
             caseId: input.caseId
         });
 
-        // 1. Retrieve the case via VisaCaseService.
-        const visaCase = await this.visaCaseService.getCase(input.caseId);
+        const workflowKey = this.workflowGuard.requirementsKey(ctx, input.caseId);
+        const result = await this.workflowGuard.executeOnce(workflowKey, async () => {
+            const visaCase = await this.visaCaseService.getCase(input.caseId);
+            const summary = this.requirementService.resolveAndCacheForCase(visaCase.caseId, {
+                nationality: visaCase.nationality,
+                destinationCountry: visaCase.destinationCountry,
+                visaType: visaCase.visaType
+            });
 
-        // 2. Pass nationality, destinationCountry, and visaType into RequirementService.
-        const summary = this.requirementService.resolveAndCacheForCase(visaCase.caseId, {
-            nationality: visaCase.nationality,
-            destinationCountry: visaCase.destinationCountry,
-            visaType: visaCase.visaType
+            return {
+                caseId: summary.caseId,
+                checklist: summary.requiredDocuments,
+                timeline: summary.estimatedTimeline,
+                notes: summary.specialNotes
+            };
         });
 
         ctx.logger.info('Visa requirements resolved', {
             user: ctx.auth?.subject,
-            caseId: visaCase.caseId
+            caseId: result.caseId
         });
 
-        // 3. Return checklist, timeline, and notes.
-        return {
-            caseId: summary.caseId,
-            checklist: summary.requiredDocuments,
-            timeline: summary.estimatedTimeline,
-            notes: summary.specialNotes
-        };
+        // The caller must now reply with the final response and make no
+        // further tool call for this user message.
+        return result;
     }
 }
