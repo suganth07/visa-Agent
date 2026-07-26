@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * Calculator MCP Server with OAuth 2.1 Authentication
- * 
+ * Visa Agent MCP Server with OAuth 2.1 Authentication
+ *
  * Main entry point for the MCP server.
  * Uses the @McpApp decorator pattern for clean, NestJS-style architecture.
  * 
@@ -26,7 +26,7 @@ import { AppModule } from './app.module.js';
  */
 async function bootstrap() {
   try {
-    console.error('🔐 Starting Calculator MCP Server with OAuth 2.1...\\n');
+    console.error('🔐 Starting Visa Agent MCP Server with OAuth 2.1...\\n');
 
     // Validate required environment variables for OAuth, set defaults if missing
     if (!process.env.RESOURCE_URI || !process.env.AUTH_SERVER_URL) {

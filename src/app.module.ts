@@ -1,27 +1,70 @@
 import { McpApp, Module, ConfigModule, OAuthModule } from '@nitrostack/core';
-import { FlightsModule } from './modules/flights/flights.module.js';
+import { CaseModule } from './modules/case/case.module.js';
+import { OnboardingModule } from './modules/onboarding/onboarding.module.js';
+import { RequirementModule } from './modules/requirement/requirement.module.js';
+import { DocumentModule } from './modules/document/document.module.js';
+import { HousingModule } from './modules/housing/housing.module.js';
+import { BrokerRecommendationModule } from './modules/recommendation/recommendation.module.js';
 import { SystemHealthCheck } from './health/system.health.js';
 
 /**
  * Root Application Module
- * 
+ *
  * This is the main module that bootstraps the MCP server.
  * It registers all feature modules and health checks.
- * 
+ *
  * OAuth 2.1 Authentication:
  * - Configured with Auth0 as the authorization server
  * - Supports read, write, and admin scopes
  * - Validates tokens with audience binding (RFC 8707)
- * 
- * Flight Booking System:
- * - Powered by Duffel API
- * - Professional flight search and booking capabilities
- * - Comprehensive widgets for search results and flight details
+ *
+ * Visa Agent:
+ * - CaseModule: first real vertical slice of the Visa Case Module
+ *   (docs/MODULES.md §3.1) — case_start and case_get, in-memory only.
+ *   TODO(visa-case): see case.service.ts and case.tools.ts for the list of
+ *   still-missing capabilities (persistence, audit, events, approvals).
+ * - OnboardingModule: second vertical slice — deterministic (no LLM),
+ *   regex/heuristic extraction of nationality, destinationCountry, and
+ *   visaType from a free-form message, then case_start via VisaCaseService
+ *   (injected from CaseModule, not called over HTTP or tool-to-tool).
+ *   TODO(onboarding): see onboarding.module.ts for scope and future
+ *   LLM-integration TODOs.
+ * - RequirementModule: third vertical slice — deterministic visa
+ *   requirement resolution (documents/timeline/steps/notes) from a small
+ *   hardcoded in-memory dataset, keyed on a case's nationality,
+ *   destinationCountry, and visaType. Retrieves the case via
+ *   VisaCaseService (injected from CaseModule) and caches the result
+ *   in-memory for `case://requirements/{caseId}` to read back.
+ *   TODO(requirement): see requirement.module.ts for scope and the future
+ *   Policy Knowledge Module TODOs.
+ * - DocumentModule: fourth vertical slice — in-memory document upload, a
+ *   deterministic OCR stub (no vendor, no LLM), and deterministic
+ *   validation of extracted fields against a case. Retrieves the case via
+ *   VisaCaseService (injected from CaseModule), the same DI pattern the
+ *   Onboarding and Requirement modules use.
+ *   TODO(document): see document.module.ts for scope and the future
+ *   Documents Module TODOs.
+ * - HousingModule: fifth vertical slice, and the first module backed by
+ *   MongoDB Atlas rather than process memory — housing preference capture
+ *   and deterministic broker shortlisting (no LLM, no ranking, no
+ *   assignment). Retrieves the case via VisaCaseService (injected from
+ *   CaseModule), the same DI pattern the other slices use.
+ *   TODO(housing): see housing.module.ts for scope and the future Broker
+ *   Module TODOs.
+ * - BrokerRecommendationModule: sixth vertical slice — the AI ranking layer
+ *   over the Housing Module's deterministic shortlist, using Gemini 2.5
+ *   Flash. It orders a fixed candidate set and validates every returned
+ *   brokerId against it; it never filters, widens, selects, or assigns.
+ *   TODO(recommendation): see recommendation.module.ts for scope and the
+ *   Approval Module TODOs.
+ * See docs/ARCHITECTURE.md and docs/MODULES.md for the full target Visa
+ * Agent module set (Case, Client, Operations, Documents, Policy Knowledge,
+ * Broker, Task, Approval, Notification, Audit).
  */
 @McpApp({
   module: AppModule,
   server: {
-    name: 'airline-ticketing-server',
+    name: 'visa-agent-server',
     version: '1.0.0'
   },
   logging: {
@@ -30,7 +73,7 @@ import { SystemHealthCheck } from './health/system.health.js';
 })
 @Module({
   name: 'app',
-  description: 'Airline ticketing MCP server with OAuth 2.1 authentication and Duffel integration',
+  description: 'Visa Agent MCP server with OAuth 2.1 authentication',
   imports: [
     ConfigModule.forRoot(),
 
@@ -89,7 +132,12 @@ import { SystemHealthCheck } from './health/system.health.js';
       },
     }),
 
-    FlightsModule
+    CaseModule,
+    OnboardingModule,
+    RequirementModule,
+    DocumentModule,
+    HousingModule,
+    BrokerRecommendationModule
   ],
   providers: [
     // Health Checks
